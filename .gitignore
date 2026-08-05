@@ -25,4 +25,3 @@ dist-ssr
 
 .env
 stats/
-data/chartdb-sync.json*
