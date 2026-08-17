@@ -19,7 +19,8 @@ RUN echo "VITE_OPENAI_API_KEY=${VITE_OPENAI_API_KEY}" > .env && \
     echo "VITE_HIDE_CHARTDB_CLOUD=${VITE_HIDE_CHARTDB_CLOUD}" >> .env && \
     echo "VITE_DISABLE_ANALYTICS=${VITE_DISABLE_ANALYTICS}" >> .env
 
-RUN npm run build
+ENV NODE_OPTIONS=--max-old-space-size=4096
+RUN NODE_OPTIONS=--max-old-space-size=6144 npx vite build
 
 FROM node:24-alpine AS production
 

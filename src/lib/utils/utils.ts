@@ -1,4 +1,5 @@
 import { type ClassValue, clsx } from 'clsx';
+import { sha256 as sha256Digest } from 'js-sha256';
 import { customAlphabet } from 'nanoid';
 import { twMerge } from 'tailwind-merge';
 const randomId = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 25);
@@ -88,18 +89,13 @@ export const decodeBase64ToUtf8 = (base64: string) => {
 export const waitFor = async (ms: number): Promise<void> => {
     return new Promise((resolve) => setTimeout(resolve, ms));
 };
-
 export const sha256 = async (message: string): Promise<string> => {
-    const msgBuffer = new TextEncoder().encode(message);
-
-    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray
-        .map((b) => b.toString(16).padStart(2, '0'))
-        .join('');
-
-    return hashHex;
+    const subtle = globalThis.crypto?.subtle;
+    if (subtle) {
+        const hashBuffer = await subtle.digest('SHA-256', new TextEncoder().encode(message));
+        return Array.from(new Uint8Array(hashBuffer)).map((byte) => byte.toString(16).padStart(2, '0')).join('');
+    }
+    return sha256Digest(message);
 };
 
 export function mergeRefs<T>(

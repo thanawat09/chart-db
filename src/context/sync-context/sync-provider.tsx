@@ -79,7 +79,7 @@ export const SyncProvider: React.FC<React.PropsWithChildren> = ({
             return existing;
         }
 
-        const created = createSyncMetadata(crypto.randomUUID());
+        const created = createSyncMetadata(globalThis.crypto?.randomUUID?.() ?? Date.now().toString(36) + String.fromCharCode(45) + Math.random().toString(36).slice(2));
         await storage.updateSyncMetadata(created);
         return created;
     }, [storage]);

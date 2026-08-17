@@ -13,6 +13,7 @@ import type { Diagram } from '@/lib/domain';
 import { useStorage } from '@/hooks/use-storage';
 import { cloneDiagram } from '@/lib/clone';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 interface DiagramRowActionsMenuProps {
     diagram: Diagram;
@@ -30,15 +31,16 @@ export const DiagramRowActionsMenu: React.FC<DiagramRowActionsMenuProps> = ({
     const { diagramId } = useChartDB();
     const { deleteDiagram, addDiagram } = useStorage();
     const { t } = useTranslation();
+    const navigate = useNavigate();
 
     const onDelete = useCallback(async () => {
         deleteDiagram(diagram.id);
         refetch();
 
         if (diagram.id === diagramId || numberOfDiagrams <= 1) {
-            window.location.href = '/';
+            navigate('/');
         }
-    }, [deleteDiagram, diagram.id, diagramId, refetch, numberOfDiagrams]);
+    }, [deleteDiagram, diagram.id, diagramId, refetch, numberOfDiagrams, navigate]);
 
     const onDuplicate = useCallback(async () => {
         const duplicatedDiagram = cloneDiagram(diagram);

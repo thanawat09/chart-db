@@ -1,4 +1,5 @@
 import { diagramSchema, type Diagram } from '@/lib/domain/diagram';
+import { sha256 } from '@/lib/utils/utils';
 import type {
     SerializedDiagram,
     ServerWorkspace,
@@ -38,14 +39,8 @@ export const deserializeDiagram = (diagram: SerializedDiagram): Diagram =>
 export const hashSerializedDiagram = async (
     diagram: SerializedDiagram
 ): Promise<string> => {
-    const serialized = JSON.stringify(sortForSerialization(diagram));
-    const hash = await crypto.subtle.digest(
-        'SHA-256',
-        new TextEncoder().encode(serialized)
-    );
-    return `sha256:${Array.from(new Uint8Array(hash))
-        .map((byte) => byte.toString(16).padStart(2, '0'))
-        .join('')}`;
+    const serialized = JSON.stringify(sortForSerialization(diagram)); const hash = await sha256(serialized);
+    return `sha256:${hash}`;
 };
 
 export const metadataFromWorkspace = (

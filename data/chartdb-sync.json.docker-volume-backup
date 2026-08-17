@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "workspaceRevision": 1,
+  "updatedAt": "2026-08-05T03:31:41.018Z",
+  "config": {
+    "revision": 1,
+    "defaultDiagramId": "yrm0m43pgxed"
+  },
+  "diagrams": {
+    "yrm0m43pgxed": {
+      "revision": 1,
+      "updatedAt": "2026-08-05T03:31:41.018Z",
+      "hash": "sha256:2056bfc57ad2b9dfd6914d310f5beb1f784498260e493730bd3e351878098b18",
+      "data": {
+        "id": "yrm0m43pgxed",
+        "name": "Diagram 1",
+        "databaseType": "postgresql",
+        "createdAt": "2026-08-05T02:21:18.158Z",
+        "updatedAt": "2026-08-05T02:21:18.158Z",
+        "tables": [],
+        "relationships": [],
+        "dependencies": [],
+        "areas": [],
+        "customTypes": [],
+        "notes": []
+      }
+    }
+  },
+  "tombstones": {}
+}

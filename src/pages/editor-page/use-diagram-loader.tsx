@@ -47,18 +47,11 @@ export const useDiagramLoader = () => {
                 hideLoader();
 
                 return;
-            } else if (!diagramId && config.defaultDiagramId) {
-                const diagram = await loadDiagram(config.defaultDiagramId);
-                if (diagram) {
-                    navigate(`/diagrams/${config.defaultDiagramId}`);
-
-                    return;
-                }
             }
             const diagrams = await listDiagrams();
 
             if (diagrams.length > 0) {
-                openOpenDiagramDialog({ canClose: false });
+                const latestDiagram = diagrams.reduce((latest, diagram) => diagram.updatedAt > latest.updatedAt ? diagram : latest); const diagram = await loadDiagram(latestDiagram.id); if (diagram) return navigate('/diagrams/' + latestDiagram.id);
             } else {
                 openCreateDiagramDialog();
             }
