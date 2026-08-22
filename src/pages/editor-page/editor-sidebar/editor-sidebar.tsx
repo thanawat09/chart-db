@@ -1,4 +1,6 @@
-import React, { useMemo } from 'react';
+import ChartDBDarkLogo from '@/assets/logo-dark.png';
+import ChartDBLogo from '@/assets/logo-light.png';
+import { Separator } from '@/components/separator/separator';
 import {
     Sidebar,
     SidebarContent,
@@ -10,26 +12,25 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/sidebar/sidebar';
+import type { SidebarSection } from '@/context/layout-context/layout-context';
+import { useBreakpoint } from '@/hooks/use-breakpoint';
+import { useChartDB } from '@/hooks/use-chartdb';
+import { useDialog } from '@/hooks/use-dialog';
+import { useLayout } from '@/hooks/use-layout';
+import { useTheme } from '@/hooks/use-theme';
+import { supportsCustomTypes } from '@/lib/domain/database-capabilities';
+import { DiscordLogoIcon, TwitterLogoIcon } from '@radix-ui/react-icons';
 import {
     BookOpen,
-    Group,
-    FileType,
-    Plus,
-    FolderOpen,
     CodeXml,
+    FileType,
+    FolderOpen,
+    Group,
+    Plus,
+    Table, Workflow,
 } from 'lucide-react';
-import { Table, Workflow } from 'lucide-react';
-import { useLayout } from '@/hooks/use-layout';
+import React, { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { DiscordLogoIcon, TwitterLogoIcon } from '@radix-ui/react-icons';
-import { useBreakpoint } from '@/hooks/use-breakpoint';
-import ChartDBLogo from '@/assets/logo-light.png';
-import ChartDBDarkLogo from '@/assets/logo-dark.png';
-import { useTheme } from '@/hooks/use-theme';
-import { useChartDB } from '@/hooks/use-chartdb';
-import { supportsCustomTypes } from '@/lib/domain/database-capabilities';
-import { useDialog } from '@/hooks/use-dialog';
-import { Separator } from '@/components/separator/separator';
 
 export interface SidebarItem {
     title: string;
@@ -46,6 +47,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = () => {
         selectSidebarSection,
         selectedSidebarSection,
         showSidePanel,
+        toggleSidePanel,
         selectVisualsTab,
     } = useLayout();
     const { t } = useTranslation();
@@ -53,6 +55,23 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = () => {
     const { effectiveTheme } = useTheme();
     const { databaseType } = useChartDB();
     const { openCreateDiagramDialog, openOpenDiagramDialog } = useDialog();
+
+    const handleSectionClick = useCallback(
+        (section: SidebarSection) => {
+            if (selectedSidebarSection === section) {
+                toggleSidePanel();
+                return;
+            }
+            showSidePanel();
+            selectSidebarSection(section);
+        },
+        [
+            selectedSidebarSection,
+            toggleSidePanel,
+            showSidePanel,
+            selectSidebarSection,
+        ]
+    );
 
     const diagramItems: SidebarItem[] = useMemo(
         () => [
@@ -81,28 +100,19 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = () => {
             {
                 title: t('editor_sidebar.tables'),
                 icon: Table,
-                onClick: () => {
-                    showSidePanel();
-                    selectSidebarSection('tables');
-                },
+                onClick: () => handleSectionClick('tables'),
                 active: selectedSidebarSection === 'tables',
             },
             {
                 title: 'DBML',
                 icon: CodeXml,
-                onClick: () => {
-                    showSidePanel();
-                    selectSidebarSection('dbml');
-                },
+                onClick: () => handleSectionClick('dbml'),
                 active: selectedSidebarSection === 'dbml',
             },
             {
                 title: t('editor_sidebar.refs'),
                 icon: Workflow,
-                onClick: () => {
-                    showSidePanel();
-                    selectSidebarSection('refs');
-                },
+                onClick: () => handleSectionClick('refs'),
                 active: selectedSidebarSection === 'refs',
             },
             ...(supportsCustomTypes(databaseType)
@@ -110,10 +120,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = () => {
                       {
                           title: t('editor_sidebar.custom_types'),
                           icon: FileType,
-                          onClick: () => {
-                              showSidePanel();
-                              selectSidebarSection('customTypes');
-                          },
+                          onClick: () => handleSectionClick('customTypes'),
                           active: selectedSidebarSection === 'customTypes',
                       },
                   ]
@@ -122,6 +129,10 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = () => {
                 title: t('editor_sidebar.visuals'),
                 icon: Group,
                 onClick: () => {
+                    if (selectedSidebarSection === 'visuals') {
+                        toggleSidePanel();
+                        return;
+                    }
                     showSidePanel();
                     selectSidebarSection('visuals');
                     selectVisualsTab('areas');
@@ -130,12 +141,14 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = () => {
             },
         ],
         [
-            selectSidebarSection,
+            handleSectionClick,
             selectedSidebarSection,
             t,
             showSidePanel,
-            databaseType,
+            toggleSidePanel,
+            selectSidebarSection,
             selectVisualsTab,
+            databaseType,
         ]
     );
 

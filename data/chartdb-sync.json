@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
-  "workspaceRevision": 250,
-  "updatedAt": "2026-08-16T03:02:41.295Z",
+  "workspaceRevision": 252,
+  "updatedAt": "2026-08-22T06:55:45.869Z",
   "config": {
     "revision": 11,
     "defaultDiagramId": "lhnima1maasp"
   },
   "diagrams": {
     "lhnima1maasp": {
-      "revision": 185,
-      "updatedAt": "2026-08-16T03:02:41.295Z",
-      "hash": "sha256:474cd60aaccec907033bfd17536aa13bdd95801db82a76448c2a1cf714e66570",
+      "revision": 187,
+      "updatedAt": "2026-08-22T06:55:45.869Z",
+      "hash": "sha256:eb716d70fec7e740281b81983befe8c041c3f5f43880debf1dbbc5ffcde0f924",
       "data": {
         "id": "lhnima1maasp",
         "name": "i clean",
         "databaseType": "postgresql",
         "createdAt": "2026-07-29T12:47:31.129Z",
-        "updatedAt": "2026-08-16T03:02:32.625Z",
+        "updatedAt": "2026-08-22T06:55:37.859Z",
         "tables": [
           {
             "id": "0tju7206xn5mku6bk6pslvxqz",
