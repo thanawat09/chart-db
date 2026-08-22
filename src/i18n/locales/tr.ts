@@ -152,6 +152,9 @@ export const tr: LanguageTranslation = {
                         auto_increment: 'Otomatik Artış',
                         example: 'Example',
                         no_example: 'No example',
+                        show_when_collapsed: 'Show when collapsed',
+                        show_when_collapsed_pk_fk_hint:
+                            'Primary keys and foreign keys always show when collapsed',
                         comments: 'Yorumlar',
                         no_comments: 'Yorum yok',
                         delete_field: 'Alanı Sil',

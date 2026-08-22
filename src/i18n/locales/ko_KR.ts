@@ -152,6 +152,9 @@ export const ko_KR: LanguageTranslation = {
                         auto_increment: '자동 증가',
                         example: 'Example',
                         no_example: 'No example',
+                        show_when_collapsed: 'Show when collapsed',
+                        show_when_collapsed_pk_fk_hint:
+                            'Primary keys and foreign keys always show when collapsed',
                         comments: '주석',
                         no_comments: '주석 없음',
                         delete_field: '필드 삭제',

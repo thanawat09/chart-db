@@ -150,6 +150,9 @@ export const ru: LanguageTranslation = {
                         auto_increment: 'Автоинкремент',
                         example: 'Example',
                         no_example: 'No example',
+                        show_when_collapsed: 'Show when collapsed',
+                        show_when_collapsed_pk_fk_hint:
+                            'Primary keys and foreign keys always show when collapsed',
                         comments: 'Комментарии',
                         no_comments: 'Нет комментария',
                         delete_field: 'Удалить поле',

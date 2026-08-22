@@ -155,6 +155,9 @@ export const mr: LanguageTranslation = {
                         auto_increment: 'ऑटो इंक्रिमेंट',
                         example: 'Example',
                         no_example: 'No example',
+                        show_when_collapsed: 'Show when collapsed',
+                        show_when_collapsed_pk_fk_hint:
+                            'Primary keys and foreign keys always show when collapsed',
                         comments: 'टिप्पण्या',
                         no_comments: 'कोणत्याही टिप्पणी नाहीत',
                         delete_field: 'फील्ड हटवा',

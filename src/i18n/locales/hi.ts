@@ -153,6 +153,9 @@ export const hi: LanguageTranslation = {
                         auto_increment: 'ऑटो इंक्रीमेंट',
                         example: 'Example',
                         no_example: 'No example',
+                        show_when_collapsed: 'Show when collapsed',
+                        show_when_collapsed_pk_fk_hint:
+                            'Primary keys and foreign keys always show when collapsed',
                         comments: 'टिप्पणियाँ',
                         no_comments: 'कोई टिप्पणी नहीं',
                         delete_field: 'फ़ील्ड हटाएँ',

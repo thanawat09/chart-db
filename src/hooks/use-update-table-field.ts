@@ -1,21 +1,21 @@
-import { useCallback, useMemo, useState, useEffect, useRef } from 'react';
-import { useChartDB } from './use-chartdb';
-import { useDebounce } from './use-debounce-v2';
-import type { DatabaseType, DBField, DBTable } from '@/lib/domain';
 import type {
     SelectBoxOption,
     SelectBoxProps,
 } from '@/components/select-box/select-box';
+import type { DataTypeData } from '@/lib/data/data-types/data-types';
 import {
+    autoIncrementAlwaysOn,
     dataTypeDataToDataType,
+    requiresNotNull,
     sortedDataTypeMap,
     supportsArrayDataType,
-    autoIncrementAlwaysOn,
-    requiresNotNull,
 } from '@/lib/data/data-types/data-types';
-import { generateDBFieldSuffix } from '@/lib/domain/db-field';
-import type { DataTypeData } from '@/lib/data/data-types/data-types';
 import { normalizeExampleValue } from '@/lib/dbml/field-note';
+import type { DatabaseType, DBField, DBTable } from '@/lib/domain';
+import { generateDBFieldSuffix } from '@/lib/domain/db-field';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useChartDB } from './use-chartdb';
+import { useDebounce } from './use-debounce-v2';
 
 const generateFieldRegexPatterns = (
     dataType: DataTypeData,
@@ -87,11 +87,16 @@ export const useUpdateTableField = (
     // Local state for responsive UI
     const [localFieldName, setLocalFieldName] = useState(field.name);
     const [localExample, setLocalExample] = useState(field.example ?? '');
+    const [localComments, setLocalComments] = useState(field.comments ?? '');
     const [localNullable, setLocalNullable] = useState(field.nullable);
     const [localPrimaryKey, setLocalPrimaryKey] = useState(field.primaryKey);
+    const [localShowWhenCollapsed, setLocalShowWhenCollapsed] = useState(
+        field.showWhenCollapsed === true
+    );
 
     const lastFieldNameRef = useRef<string>(field.name);
     const lastExampleRef = useRef<string>(field.example ?? '');
+    const lastCommentsRef = useRef<string>(field.comments ?? '');
 
     useEffect(() => {
         if (localFieldName === lastFieldNameRef.current) {
@@ -108,11 +113,20 @@ export const useUpdateTableField = (
         }
     }, [field.example, localExample]);
 
+    useEffect(() => {
+        const nextComments = field.comments ?? '';
+        if (localComments === lastCommentsRef.current) {
+            lastCommentsRef.current = nextComments;
+            setLocalComments(nextComments);
+        }
+    }, [field.comments, localComments]);
+
     // Update local state when field properties change externally
     useEffect(() => {
         setLocalNullable(field.nullable);
         setLocalPrimaryKey(field.primaryKey);
-    }, [field.nullable, field.primaryKey]);
+        setLocalShowWhenCollapsed(field.showWhenCollapsed === true);
+    }, [field.nullable, field.primaryKey, field.showWhenCollapsed]);
 
     // Auto-correct: Primary key fields must be NOT NULL
     // This fixes any existing data where PK columns were incorrectly set as nullable
@@ -309,6 +323,20 @@ export const useUpdateTableField = (
         300
     );
 
+    const debouncedCommentsUpdate = useDebounce(
+        useCallback(
+            (value: string) => {
+                const next = value.trim() === '' ? null : value;
+                const current = field.comments ?? null;
+                if (next !== current) {
+                    updateField(table.id, field.id, { comments: next });
+                }
+            },
+            [updateField, table.id, field.id, field.comments]
+        ),
+        300
+    );
+
     // Debounced update for nullable toggle
     const debouncedNullableUpdate = useDebounce(
         useCallback(
@@ -325,6 +353,18 @@ export const useUpdateTableField = (
             [updateField, table.id, field.id, field.increment]
         ),
         100 // 100ms debounce for toggle
+    );
+
+    const debouncedShowWhenCollapsedUpdate = useDebounce(
+        useCallback(
+            (value: boolean) => {
+                updateField(table.id, field.id, {
+                    showWhenCollapsed: value,
+                });
+            },
+            [updateField, table.id, field.id]
+        ),
+        100
     );
 
     // Debounced update for primary key toggle
@@ -376,6 +416,14 @@ export const useUpdateTableField = (
         [debouncedNullableUpdate]
     );
 
+    const handleShowWhenCollapsedToggle = useCallback(
+        (value: boolean) => {
+            setLocalShowWhenCollapsed(value);
+            debouncedShowWhenCollapsedUpdate(value);
+        },
+        [debouncedShowWhenCollapsedUpdate]
+    );
+
     // Handle name change with optimistic update
     const handleNameChange = useCallback(
         (value: string) => {
@@ -391,6 +439,14 @@ export const useUpdateTableField = (
             debouncedExampleUpdate(value);
         },
         [debouncedExampleUpdate]
+    );
+
+    const handleCommentsChange = useCallback(
+        (value: string) => {
+            setLocalComments(value);
+            debouncedCommentsUpdate(value);
+        },
+        [debouncedCommentsUpdate]
     );
 
     // Utility function to generate field suffix for display
@@ -420,14 +476,18 @@ export const useUpdateTableField = (
         handleDataTypeChange,
         handlePrimaryKeyToggle,
         handleNullableToggle,
+        handleShowWhenCollapsedToggle,
         handleNameChange,
         handleExampleChange,
+        handleCommentsChange,
         generateFieldSuffix,
         primaryKeyCount,
         fieldName: localFieldName,
         example: localExample,
+        comments: localComments,
         nullable: localNullable,
         primaryKey: localPrimaryKey,
+        showWhenCollapsed: localShowWhenCollapsed,
         removeField,
     };
 };

@@ -152,6 +152,9 @@ export const id_ID: LanguageTranslation = {
                         auto_increment: 'Kenaikan Otomatis',
                         example: 'Example',
                         no_example: 'No example',
+                        show_when_collapsed: 'Show when collapsed',
+                        show_when_collapsed_pk_fk_hint:
+                            'Primary keys and foreign keys always show when collapsed',
                         comments: 'Komentar',
                         no_comments: 'Tidak ada komentar',
                         delete_field: 'Hapus Kolom',

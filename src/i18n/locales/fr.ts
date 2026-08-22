@@ -150,6 +150,9 @@ export const fr: LanguageTranslation = {
                         auto_increment: 'Auto-incrément',
                         example: 'Example',
                         no_example: 'No example',
+                        show_when_collapsed: 'Show when collapsed',
+                        show_when_collapsed_pk_fk_hint:
+                            'Primary keys and foreign keys always show when collapsed',
                         comments: 'Commentaires',
                         no_comments: 'Pas de commentaires',
                         delete_field: 'Supprimer le Champ',

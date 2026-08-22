@@ -5,6 +5,11 @@ import {
     dbCheckConstraintSchema,
     type DBCheckConstraint,
 } from './db-check-constraint';
+import {
+    getCollapsedVisibleFields,
+    getRelationshipFieldIds,
+    needsShowMore,
+} from './field-collapsed-visibility';
 import { deepCopy, findContainingArea } from '../utils';
 import { schemaNameToDomainSchemaName } from './db-schema';
 import { z } from 'zod';
@@ -187,10 +192,12 @@ function isTableInsideArea(table: DBTable, area: Area): boolean {
 // Helper function to position tables within an area
 export function positionTablesWithinArea(
     tables: DBTable[],
-    _relationships: DBRelationship[],
+    relationships: DBRelationship[],
     area: Area
 ) {
     if (tables.length === 0) return;
+
+    const relationshipFieldIds = getRelationshipFieldIds(relationships);
 
     const padding = 20; // Padding from area edges
     const gapX = 50;
@@ -216,7 +223,7 @@ export function positionTablesWithinArea(
         table.y = area.y + padding + row * cellHeight + gapY / 2;
 
         // Ensure table stays within area bounds
-        const tableDimensions = getTableDimensions(table);
+        const tableDimensions = getTableDimensions(table, relationshipFieldIds);
         const maxX = area.x + area.width - padding - tableDimensions.width;
         const maxY = area.y + area.height - padding - tableDimensions.height;
 
@@ -234,6 +241,8 @@ export function adjustTablePositionsWithoutAreas(
     mode: 'all' | 'perSchema',
     areas: Area[] = []
 ): DBTable[] {
+    const relationshipFieldIds = getRelationshipFieldIds(relationships);
+
     const adjustPositionsForTables = (tablesToAdjust: DBTable[]) => {
         const defaultTableWidth = 200;
         const defaultTableHeight = 300;
@@ -291,7 +300,7 @@ export function adjustTablePositionsWithoutAreas(
             if (!table)
                 return { width: defaultTableWidth, height: defaultTableHeight };
 
-            return getTableDimensions(table);
+            return getTableDimensions(table, relationshipFieldIds);
         };
 
         const isOverlapping = (
@@ -523,7 +532,10 @@ export function adjustTablePositionsWithoutAreas(
     return tables;
 }
 
-export const calcTableHeight = (table?: DBTable): number => {
+export const calcTableHeight = (
+    table?: DBTable,
+    relationshipFieldIds?: Set<string>
+): number => {
     if (!table) {
         return 300;
     }
@@ -531,27 +543,32 @@ export const calcTableHeight = (table?: DBTable): number => {
     const FIELD_HEIGHT = 32; // h-8 per field
     const TABLE_FOOTER_HEIGHT = 32; // h-8 for show more button
     const TABLE_HEADER_HEIGHT = 42;
-    // Calculate how many fields are visible
     const fieldCount = table.fields.length;
+    const relIds = relationshipFieldIds ?? new Set<string>();
     let visibleFieldCount = fieldCount;
 
-    // If not expanded, use minimum of field count and TABLE_MINIMIZED_FIELDS
     if (!table.expanded) {
-        visibleFieldCount = Math.min(fieldCount, TABLE_MINIMIZED_FIELDS);
+        visibleFieldCount = getCollapsedVisibleFields(
+            table.fields,
+            relIds
+        ).length;
     }
 
-    // Calculate height based on visible fields
+    // Footer (Show More / Show Less) when any field is hidden while collapsed
+    const showMoreButtonHeight = needsShowMore(table.fields, relIds)
+        ? TABLE_FOOTER_HEIGHT
+        : 0;
+
     const fieldsHeight = visibleFieldCount * FIELD_HEIGHT;
-    const showMoreButtonHeight =
-        fieldCount > TABLE_MINIMIZED_FIELDS ? TABLE_FOOTER_HEIGHT : 0;
 
     return TABLE_HEADER_HEIGHT + fieldsHeight + showMoreButtonHeight;
 };
 
 export const getTableDimensions = (
-    table: DBTable
+    table: DBTable,
+    relationshipFieldIds?: Set<string>
 ): { width: number; height: number } => {
-    const height = calcTableHeight(table);
+    const height = calcTableHeight(table, relationshipFieldIds);
     const width = table.width || MIN_TABLE_SIZE;
     return { width, height };
 };

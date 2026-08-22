@@ -24,6 +24,7 @@ export interface DBField {
     collation?: string | null;
     comments?: string | null;
     example?: string | null;
+    showWhenCollapsed?: boolean | null;
     check?: string | null;
 }
 
@@ -44,6 +45,7 @@ export const dbFieldSchema: z.ZodType<DBField> = z.object({
     collation: z.string().or(z.null()).optional(),
     comments: z.string().or(z.null()).optional(),
     example: z.string().or(z.null()).optional(),
+    showWhenCollapsed: z.boolean().or(z.null()).optional(),
     check: z.string().or(z.null()).optional(),
 });
 

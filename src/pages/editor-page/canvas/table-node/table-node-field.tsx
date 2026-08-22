@@ -1,41 +1,31 @@
-import React, {
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from 'react';
-import {
-    Handle,
-    Position,
-    useConnection,
-    useUpdateNodeInternals,
-} from '@xyflow/react';
-import { Button } from '@/components/button/button';
-import {
-    KeyRound,
-    MessageCircleMore,
-    SquareDot,
-    SquareMinus,
-    SquarePlus,
-    Pencil,
-} from 'lucide-react';
-import { generateDBFieldSuffix, type DBField } from '@/lib/domain/db-field';
-import { useChartDB } from '@/hooks/use-chartdb';
-import { cn } from '@/lib/utils';
 import {
     Tooltip,
     TooltipContent,
     TooltipTrigger,
 } from '@/components/tooltip/tooltip';
 import { useDiff } from '@/context/diff-context/use-diff';
+import { useChartDB } from '@/hooks/use-chartdb';
 import { useLocalConfig } from '@/hooks/use-local-config';
+import { generateDBFieldSuffix, type DBField } from '@/lib/domain/db-field';
+import { cn } from '@/lib/utils';
+import {
+    Handle,
+    Position,
+    useConnection,
+    useUpdateNodeInternals,
+} from '@xyflow/react';
+import {
+    KeyRound,
+    MessageCircleMore,
+    SquareDot,
+    SquareMinus,
+    SquarePlus,
+} from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
     BOTTOM_SOURCE_HANDLE_ID_PREFIX,
     TOP_SOURCE_HANDLE_ID_PREFIX,
 } from './table-node-dependency-indicator';
-import { useCanvas } from '@/hooks/use-canvas';
-import { useLayout } from '@/hooks/use-layout';
 
 export const LEFT_HANDLE_ID_PREFIX = 'left_rel_';
 export const RIGHT_HANDLE_ID_PREFIX = 'right_rel_';
@@ -324,26 +314,6 @@ export const TableNodeField: React.FC<TableNodeFieldProps> = React.memo(
         }, [highlightedCustomType, field.type.name]);
         const { showFieldAttributes } = useLocalConfig();
 
-        const { closeAllTablesInSidebar } = useLayout();
-        const { setEditTableModeTable } = useCanvas();
-        const openEditTableOnField = useCallback(() => {
-            if (readonly) {
-                return;
-            }
-
-            closeAllTablesInSidebar();
-            setEditTableModeTable({
-                tableId: tableNodeId,
-                fieldId: field.id,
-            });
-        }, [
-            setEditTableModeTable,
-            closeAllTablesInSidebar,
-            tableNodeId,
-            field.id,
-            readonly,
-        ]);
-
         return (
             <div
                 className={cn(
@@ -479,8 +449,7 @@ export const TableNodeField: React.FC<TableNodeFieldProps> = React.memo(
 
                 <div
                     className={cn(
-                        'ml-auto flex shrink-0 items-center gap-1 min-w-0',
-                        !readonly ? 'group-hover:hidden' : ''
+                        'ml-auto flex shrink-0 items-center gap-1 min-w-0'
                     )}
                 >
                     {(field.primaryKey && !fieldDiffChangedPrimaryKey?.old) ||
@@ -624,20 +593,6 @@ export const TableNodeField: React.FC<TableNodeFieldProps> = React.memo(
                         </span>
                     </div>
                 </div>
-                {readonly ? null : (
-                    <div className="ml-2 hidden shrink-0 flex-row group-hover:flex">
-                        <Button
-                            variant="ghost"
-                            className="size-6 p-0 hover:bg-primary-foreground"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                openEditTableOnField();
-                            }}
-                        >
-                            <Pencil className="!size-3.5 text-pink-600" />
-                        </Button>
-                    </div>
-                )}
             </div>
         );
     },

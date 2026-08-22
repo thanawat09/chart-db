@@ -1,3 +1,70 @@
+import { Badge } from '@/components/badge/badge';
+import { Button } from '@/components/button/button';
+import { useToast } from '@/components/toast/use-toast';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from '@/components/tooltip/tooltip';
+import type { ChartDBEvent } from '@/context/chartdb-context/chartdb-context';
+import { useDiagramFilter } from '@/context/diagram-filter-context/use-diagram-filter';
+import { useDiff } from '@/context/diff-context/use-diff';
+import { useBreakpoint } from '@/hooks/use-breakpoint';
+import { useCanvas } from '@/hooks/use-canvas';
+import { useChartDB } from '@/hooks/use-chartdb';
+import { useLayout } from '@/hooks/use-layout';
+import { useLocalConfig } from '@/hooks/use-local-config';
+import { useTheme } from '@/hooks/use-theme';
+import { areFieldTypesCompatible } from '@/lib/data/data-types/data-types';
+import { defaultSchemas } from '@/lib/data/default-schemas';
+import type { Area } from '@/lib/domain/area';
+import type { DatabaseType } from '@/lib/domain/database-type';
+import type { DBTable } from '@/lib/domain/db-table';
+import { MIN_TABLE_SIZE } from '@/lib/domain/db-table';
+import type { DiagramFilter } from '@/lib/domain/diagram-filter/diagram-filter';
+import { filterTable } from '@/lib/domain/diagram-filter/filter';
+import { getRelationshipFieldIds } from '@/lib/domain/field-collapsed-visibility';
+import type { Note } from '@/lib/domain/note';
+import type { Graph } from '@/lib/graph';
+import { removeVertex } from '@/lib/graph';
+import { cn, debounce, getOperatingSystem } from '@/lib/utils';
+import {
+    getTablesInArea,
+    updateTablesParentAreas,
+} from '@/lib/utils/area-utils';
+import type {
+    addEdge,
+    EdgeTypes,
+    NodeChange,
+    NodeDimensionChange,
+    NodePositionChange,
+    NodeRemoveChange,
+    NodeTypes,
+    OnEdgesChange,
+    OnNodesChange,
+} from '@xyflow/react';
+import {
+    Background,
+    BackgroundVariant,
+    Controls,
+    MiniMap,
+    ReactFlow,
+    SelectionMode,
+    useEdgesState,
+    useKeyPress,
+    useNodesState,
+    useReactFlow,
+    useUpdateNodeInternals,
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
+import equal from 'fast-deep-equal';
+import {
+    AlertTriangle,
+    EyeOff,
+    Highlighter,
+    Magnet,
+    Pencil,
+} from 'lucide-react';
 import React, {
     useCallback,
     useEffect,
@@ -5,95 +72,45 @@ import React, {
     useRef,
     useState,
 } from 'react';
-import type {
-    addEdge,
-    NodePositionChange,
-    NodeRemoveChange,
-    NodeDimensionChange,
-    OnEdgesChange,
-    OnNodesChange,
-    NodeTypes,
-    EdgeTypes,
-    NodeChange,
-} from '@xyflow/react';
+import { useHotkeys } from 'react-hotkeys-hook';
+import { useTranslation } from 'react-i18next';
+import { useClickAway } from 'react-use';
+import type { AreaNodeType } from './area-node/area-node';
+import { AreaNode } from './area-node/area-node';
+import { CanvasContextMenu } from './canvas-context-menu';
+import { CanvasFilter } from './canvas-filter/canvas-filter';
 import {
-    ReactFlow,
-    useEdgesState,
-    useNodesState,
-    Background,
-    BackgroundVariant,
-    MiniMap,
-    Controls,
-    useReactFlow,
-    useKeyPress,
-    SelectionMode,
-    useUpdateNodeInternals,
-} from '@xyflow/react';
-import '@xyflow/react/dist/style.css';
-import equal from 'fast-deep-equal';
+    calcTableHeight,
+    findOverlappingTables,
+    findTableOverlapping,
+} from './canvas-utils';
+import { ConnectionLine } from './connection-line/connection-line';
+import type { CreateRelationshipNodeType } from './create-relationship-node/create-relationship-node';
+import { CreateRelationshipNode } from './create-relationship-node/create-relationship-node';
+import type { DependencyEdgeType } from './dependency-edge/dependency-edge';
+import { DependencyEdge } from './dependency-edge/dependency-edge';
+import { useIsLostInCanvas } from './hooks/use-is-lost-in-canvas';
+import { MarkerDefinitions } from './marker-definitions';
+import type { NoteNodeType } from './note-node/note-node';
+import { NoteNode } from './note-node/note-node';
+import type { RelationshipEdgeType } from './relationship-edge/relationship-edge';
+import { RelationshipEdge } from './relationship-edge/relationship-edge';
+import { ShowAllButton } from './show-all-button';
 import type { TableNodeType } from './table-node/table-node';
 import {
     TABLE_RELATIONSHIP_SOURCE_HANDLE_ID_PREFIX,
     TABLE_RELATIONSHIP_TARGET_HANDLE_ID_PREFIX,
     TableNode,
 } from './table-node/table-node';
-import type { RelationshipEdgeType } from './relationship-edge/relationship-edge';
-import { RelationshipEdge } from './relationship-edge/relationship-edge';
-import { useChartDB } from '@/hooks/use-chartdb';
-import {
-    LEFT_HANDLE_ID_PREFIX,
-    TARGET_ID_PREFIX,
-} from './table-node/table-node-field';
-import { Toolbar } from './toolbar/toolbar';
-import { useToast } from '@/components/toast/use-toast';
-import {
-    Pencil,
-    Magnet,
-    AlertTriangle,
-    Highlighter,
-    EyeOff,
-} from 'lucide-react';
-import { Button } from '@/components/button/button';
-import { useLayout } from '@/hooks/use-layout';
-import { useBreakpoint } from '@/hooks/use-breakpoint';
-import { Badge } from '@/components/badge/badge';
-import { useTheme } from '@/hooks/use-theme';
-import { useTranslation } from 'react-i18next';
-import type { DBTable } from '@/lib/domain/db-table';
-import { MIN_TABLE_SIZE } from '@/lib/domain/db-table';
-import { useLocalConfig } from '@/hooks/use-local-config';
-import {
-    Tooltip,
-    TooltipTrigger,
-    TooltipContent,
-} from '@/components/tooltip/tooltip';
-import { MarkerDefinitions } from './marker-definitions';
-import { CanvasContextMenu } from './canvas-context-menu';
-import { areFieldTypesCompatible } from '@/lib/data/data-types/data-types';
-import {
-    calcTableHeight,
-    findOverlappingTables,
-    findTableOverlapping,
-} from './canvas-utils';
-import type { Graph } from '@/lib/graph';
-import { removeVertex } from '@/lib/graph';
-import type { ChartDBEvent } from '@/context/chartdb-context/chartdb-context';
-import { cn, debounce, getOperatingSystem } from '@/lib/utils';
-import type { DependencyEdgeType } from './dependency-edge/dependency-edge';
-import { DependencyEdge } from './dependency-edge/dependency-edge';
 import {
     BOTTOM_SOURCE_HANDLE_ID_PREFIX,
     TARGET_DEP_PREFIX,
     TOP_SOURCE_HANDLE_ID_PREFIX,
 } from './table-node/table-node-dependency-indicator';
-import type { DatabaseType } from '@/lib/domain/database-type';
-import { useCanvas } from '@/hooks/use-canvas';
-import type { AreaNodeType } from './area-node/area-node';
-import { AreaNode } from './area-node/area-node';
-import type { Area } from '@/lib/domain/area';
-import type { NoteNodeType } from './note-node/note-node';
-import { NoteNode } from './note-node/note-node';
-import type { Note } from '@/lib/domain/note';
+import {
+    LEFT_HANDLE_ID_PREFIX,
+    TARGET_ID_PREFIX,
+} from './table-node/table-node-field';
 import type { TempCursorNodeType } from './temp-cursor-node/temp-cursor-node';
 import {
     TEMP_CURSOR_HANDLE_ID,
@@ -105,23 +122,7 @@ import {
     TEMP_FLOATING_EDGE_ID,
     TempFloatingEdge,
 } from './temp-floating-edge/temp-floating-edge';
-import type { CreateRelationshipNodeType } from './create-relationship-node/create-relationship-node';
-import { CreateRelationshipNode } from './create-relationship-node/create-relationship-node';
-import { ConnectionLine } from './connection-line/connection-line';
-import {
-    updateTablesParentAreas,
-    getTablesInArea,
-} from '@/lib/utils/area-utils';
-import { CanvasFilter } from './canvas-filter/canvas-filter';
-import { useHotkeys } from 'react-hotkeys-hook';
-import { ShowAllButton } from './show-all-button';
-import { useIsLostInCanvas } from './hooks/use-is-lost-in-canvas';
-import type { DiagramFilter } from '@/lib/domain/diagram-filter/diagram-filter';
-import { useDiagramFilter } from '@/context/diagram-filter-context/use-diagram-filter';
-import { filterTable } from '@/lib/domain/diagram-filter/filter';
-import { defaultSchemas } from '@/lib/data/default-schemas';
-import { useDiff } from '@/context/diff-context/use-diff';
-import { useClickAway } from 'react-use';
+import { Toolbar } from './toolbar/toolbar';
 
 const HIGHLIGHTED_EDGE_Z_INDEX = 1;
 const DEFAULT_EDGE_Z_INDEX = 0;
@@ -1410,10 +1411,13 @@ export const Canvas: React.FC<CanvasProps> = ({ initialTables }) => {
 
                 const measured = {
                     ...(node.measured ?? {}),
-                    height: calcTableHeight({
-                        ...node.data.table,
-                        fields: event.data.fields,
-                    }),
+                    height: calcTableHeight(
+                        {
+                            ...node.data.table,
+                            fields: event.data.fields,
+                        },
+                        getRelationshipFieldIds(relationships)
+                    ),
                 };
 
                 newOverlappingGraph = findTableOverlapping(
@@ -1460,6 +1464,7 @@ export const Canvas: React.FC<CanvasProps> = ({ initialTables }) => {
             setNodes,
             databaseType,
             showDBViews,
+            relationships,
         ]
     );
 
@@ -1500,7 +1505,18 @@ export const Canvas: React.FC<CanvasProps> = ({ initialTables }) => {
 
     const containerRef = useRef<HTMLDivElement>(null);
     const exitEditTableMode = useCallback(
-        () => setEditTableModeTable(null),
+        (event: Event) => {
+            const target = event.target;
+            if (
+                target instanceof Element &&
+                (target.closest('[role="dialog"]') ||
+                    target.closest('[data-radix-popper-content-wrapper]') ||
+                    target.closest('[data-radix-select-content]'))
+            ) {
+                return;
+            }
+            setEditTableModeTable(null);
+        },
         [setEditTableModeTable]
     );
     useClickAway(containerRef, exitEditTableMode);

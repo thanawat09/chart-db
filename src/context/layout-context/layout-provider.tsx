@@ -5,12 +5,10 @@ import type {
     VisualsTab,
 } from './layout-context';
 import { layoutContext } from './layout-context';
-import { useBreakpoint } from '@/hooks/use-breakpoint';
 
 export const LayoutProvider: React.FC<React.PropsWithChildren> = ({
     children,
 }) => {
-    const { isMd: isDesktop } = useBreakpoint('md');
     const [openedTableInSidebar, setOpenedTableInSidebar] = React.useState<
         string | undefined
     >();
@@ -30,7 +28,7 @@ export const LayoutProvider: React.FC<React.PropsWithChildren> = ({
     const [selectedVisualsTab, setSelectedVisualsTab] =
         React.useState<VisualsTab>('areas');
     const [isSidePanelShowed, setIsSidePanelShowed] =
-        React.useState<boolean>(isDesktop);
+        React.useState<boolean>(false);
 
     const closeAllTablesInSidebar: LayoutContext['closeAllTablesInSidebar'] =
         () => setOpenedTableInSidebar('');

@@ -155,6 +155,9 @@ export const ja: LanguageTranslation = {
                         auto_increment: 'オートインクリメント',
                         example: 'Example',
                         no_example: 'No example',
+                        show_when_collapsed: 'Show when collapsed',
+                        show_when_collapsed_pk_fk_hint:
+                            'Primary keys and foreign keys always show when collapsed',
                         comments: 'コメント',
                         no_comments: 'コメントがありません',
                         delete_field: 'フィールドを削除',

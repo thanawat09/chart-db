@@ -154,6 +154,9 @@ export const gu: LanguageTranslation = {
                         auto_increment: 'ઑટો ઇન્ક્રિમેન્ટ',
                         example: 'Example',
                         no_example: 'No example',
+                        show_when_collapsed: 'Show when collapsed',
+                        show_when_collapsed_pk_fk_hint:
+                            'Primary keys and foreign keys always show when collapsed',
                         comments: 'ટિપ્પણીઓ',
                         no_comments: 'કોઈ ટિપ્પણીઓ નથી',
                         delete_field: 'ફીલ્ડ કાઢી નાખો',

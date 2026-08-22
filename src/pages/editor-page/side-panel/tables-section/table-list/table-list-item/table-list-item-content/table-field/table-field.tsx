@@ -1,8 +1,9 @@
-import React, { useState, useCallback } from 'react';
-import { GripVertical, KeyRound } from 'lucide-react';
+import React, { useState, useCallback, useMemo } from 'react';
+import { Eye, EyeOff, GripVertical, KeyRound } from 'lucide-react';
 import { Input } from '@/components/input/input';
 import { generateDBFieldSuffix, type DBField } from '@/lib/domain/db-field';
 import { useUpdateTableField } from '@/hooks/use-update-table-field';
+import { useChartDB } from '@/hooks/use-chartdb';
 import {
     Tooltip,
     TooltipContent,
@@ -35,6 +36,7 @@ export const TableField: React.FC<TableFieldProps> = ({
     readonly = false,
 }) => {
     const { t } = useTranslation();
+    const { relationships } = useChartDB();
 
     const { attributes, listeners, setNodeRef, transform, transition } =
         useSortable({ id: field.id });
@@ -44,12 +46,24 @@ export const TableField: React.FC<TableFieldProps> = ({
         handleDataTypeChange,
         handlePrimaryKeyToggle,
         handleNullableToggle,
+        handleShowWhenCollapsedToggle,
         handleNameChange,
         generateFieldSuffix,
         fieldName,
         nullable,
         primaryKey,
+        showWhenCollapsed,
     } = useUpdateTableField(table, field, updateField);
+
+    const isForeignKey = useMemo(
+        () =>
+            relationships.some(
+                (rel) =>
+                    rel.sourceFieldId === field.id ||
+                    rel.targetFieldId === field.id
+            ),
+        [relationships, field.id]
+    );
 
     const style = {
         transform: CSS.Translate.toString(transform),
@@ -155,6 +169,37 @@ export const TableField: React.FC<TableFieldProps> = ({
                 </Tooltip>
             </div>
             <div className="flex shrink-0 items-center justify-end gap-1">
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <span>
+                            <TableFieldToggle
+                                pressed={showWhenCollapsed}
+                                onPressedChange={handleShowWhenCollapsedToggle}
+                                disabled={readonly}
+                            >
+                                {showWhenCollapsed ? (
+                                    <Eye className="h-3.5" />
+                                ) : (
+                                    <EyeOff className="h-3.5" />
+                                )}
+                            </TableFieldToggle>
+                        </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <div>
+                            {t(
+                                'side_panel.tables_section.table.field_actions.show_when_collapsed'
+                            )}
+                        </div>
+                        {primaryKey || isForeignKey ? (
+                            <div className="mt-1 text-xs opacity-80">
+                                {t(
+                                    'side_panel.tables_section.table.field_actions.show_when_collapsed_pk_fk_hint'
+                                )}
+                            </div>
+                        ) : null}
+                    </TooltipContent>
+                </Tooltip>
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <span>

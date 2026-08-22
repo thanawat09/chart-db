@@ -7,6 +7,7 @@ import {
     getTableDimensions,
     MIN_TABLE_SIZE,
 } from '@/lib/domain/db-table';
+import { getRelationshipFieldIds } from '@/lib/domain/field-collapsed-visibility';
 
 /**
  * Check if a table is inside an area based on their positions and dimensions
@@ -123,13 +124,15 @@ export const arrangeTablesForArea = (
 
     adjustTablePositionsWithoutAreas(cloned, areaRels, 'all');
 
+    const relationshipFieldIds = getRelationshipFieldIds(areaRels);
+
     // Calculate bounding box
     let minX = Infinity;
     let minY = Infinity;
     let maxX = -Infinity;
     let maxY = -Infinity;
     cloned.forEach((t) => {
-        const { width, height } = getTableDimensions(t);
+        const { width, height } = getTableDimensions(t, relationshipFieldIds);
         minX = Math.min(minX, t.x);
         minY = Math.min(minY, t.y);
         maxX = Math.max(maxX, t.x + width);

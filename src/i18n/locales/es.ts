@@ -152,6 +152,9 @@ export const es: LanguageTranslation = {
                         auto_increment: 'Autoincremento',
                         example: 'Example',
                         no_example: 'No example',
+                        show_when_collapsed: 'Show when collapsed',
+                        show_when_collapsed_pk_fk_hint:
+                            'Primary keys and foreign keys always show when collapsed',
                         comments: 'Comentarios',
                         no_comments: 'Sin comentarios',
                         delete_field: 'Eliminar Campo',

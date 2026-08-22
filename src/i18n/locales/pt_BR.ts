@@ -153,6 +153,9 @@ export const pt_BR: LanguageTranslation = {
                         auto_increment: 'Incremento Automático',
                         example: 'Example',
                         no_example: 'No example',
+                        show_when_collapsed: 'Show when collapsed',
+                        show_when_collapsed_pk_fk_hint:
+                            'Primary keys and foreign keys always show when collapsed',
                         comments: 'Comentários',
                         no_comments: 'Sem comentários',
                         delete_field: 'Excluir Campo',

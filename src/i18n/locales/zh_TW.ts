@@ -149,6 +149,9 @@ export const zh_TW: LanguageTranslation = {
                         auto_increment: '自動遞增',
                         example: 'Example',
                         no_example: 'No example',
+                        show_when_collapsed: 'Show when collapsed',
+                        show_when_collapsed_pk_fk_hint:
+                            'Primary keys and foreign keys always show when collapsed',
                         comments: '註解',
                         no_comments: '無註解',
                         delete_field: '刪除欄位',

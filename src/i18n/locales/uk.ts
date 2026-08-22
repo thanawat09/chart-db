@@ -151,6 +151,9 @@ export const uk: LanguageTranslation = {
                         auto_increment: 'Автоінкремент',
                         example: 'Example',
                         no_example: 'No example',
+                        show_when_collapsed: 'Show when collapsed',
+                        show_when_collapsed_pk_fk_hint:
+                            'Primary keys and foreign keys always show when collapsed',
                         comments: 'Коментарі',
                         no_comments: 'Немає коментарів',
                         delete_field: 'Видалити поле',

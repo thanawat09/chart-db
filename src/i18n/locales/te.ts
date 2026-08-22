@@ -153,6 +153,9 @@ export const te: LanguageTranslation = {
                         auto_increment: 'ఆటో ఇంక్రిమెంట్',
                         example: 'Example',
                         no_example: 'No example',
+                        show_when_collapsed: 'Show when collapsed',
+                        show_when_collapsed_pk_fk_hint:
+                            'Primary keys and foreign keys always show when collapsed',
                         comments: 'వ్యాఖ్యలు',
                         no_comments: 'వ్యాఖ్యలు లేవు',
                         delete_field: 'ఫీల్డ్ తొలగించు',

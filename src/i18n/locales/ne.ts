@@ -153,6 +153,9 @@ export const ne: LanguageTranslation = {
                         auto_increment: 'स्वचालित वृद्धि',
                         example: 'Example',
                         no_example: 'No example',
+                        show_when_collapsed: 'Show when collapsed',
+                        show_when_collapsed_pk_fk_hint:
+                            'Primary keys and foreign keys always show when collapsed',
                         comments: 'टिप्पणीहरू',
                         no_comments: 'कुनै टिप्पणीहरू छैनन्',
                         delete_field: 'क्षेत्र हटाउनुहोस्',

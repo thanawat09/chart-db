@@ -1,4 +1,10 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, {
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 import type { DBTable } from '@/lib/domain/db-table';
 import { deepCopy, generateId } from '@/lib/utils';
 import { defaultTableColor, randomColor, viewColor } from '@/lib/colors';
@@ -34,6 +40,10 @@ import {
     type DBCustomType,
 } from '@/lib/domain/db-custom-type';
 import { getDefaultPrimaryKeyType } from '@/lib/data/data-types/data-types';
+import {
+    getRelationshipFieldIds,
+    seedShowWhenCollapsedFlags,
+} from '@/lib/domain/field-collapsed-visibility';
 
 export interface ChartDBProviderProps {
     diagram?: Diagram;
@@ -71,6 +81,8 @@ export const ChartDBProvider: React.FC<
         diagram?.customTypes ?? []
     );
     const [notes, setNotes] = useState<Note[]>(diagram?.notes ?? []);
+
+    const didMigrateShowWhenCollapsed = useRef(false);
 
     const { events: diffEvents } = useDiff();
 
@@ -720,6 +732,53 @@ export const ChartDBProvider: React.FC<
         [db, diagramId, setTables, addUndoAction, resetRedoStack, getField]
     );
 
+    useEffect(() => {
+        if (
+            didMigrateShowWhenCollapsed.current ||
+            !diagramId ||
+            tables.length === 0
+        ) {
+            return;
+        }
+
+        didMigrateShowWhenCollapsed.current = true;
+
+        void (async () => {
+            for (const table of tables) {
+                const relationshipFieldIds = getRelationshipFieldIds(
+                    relationships.filter(
+                        (relationship) =>
+                            relationship.sourceTableId === table.id ||
+                            relationship.targetTableId === table.id
+                    )
+                );
+                const updates = seedShowWhenCollapsedFlags(
+                    table.fields,
+                    relationshipFieldIds
+                );
+                for (const update of updates) {
+                    // Skip if user already set the flag while this async seed runs
+                    const current = getField(table.id, update.fieldId);
+                    if (
+                        !current ||
+                        (current.showWhenCollapsed !== undefined &&
+                            current.showWhenCollapsed !== null)
+                    ) {
+                        continue;
+                    }
+                    await updateField(
+                        table.id,
+                        update.fieldId,
+                        {
+                            showWhenCollapsed: update.showWhenCollapsed,
+                        },
+                        { updateHistory: false }
+                    );
+                }
+            }
+        })();
+    }, [diagramId, tables, relationships, updateField, getField]);
+
     const removeField: ChartDBContext['removeField'] = useCallback(
         async (
             tableId: string,
@@ -874,6 +933,7 @@ export const ChartDBProvider: React.FC<
                 unique: false,
                 nullable: true,
                 primaryKey: false,
+                showWhenCollapsed: false,
                 createdAt: Date.now(),
             };
 
@@ -1882,6 +1942,7 @@ export const ChartDBProvider: React.FC<
     const loadDiagramFromData: ChartDBContext['loadDiagramFromData'] =
         useCallback(
             (diagram) => {
+                didMigrateShowWhenCollapsed.current = false;
                 setDiagramId(diagram.id);
                 setDiagramName(diagram.name);
                 setDatabaseType(diagram.databaseType);

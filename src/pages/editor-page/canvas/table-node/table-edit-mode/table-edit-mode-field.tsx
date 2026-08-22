@@ -1,19 +1,20 @@
-import React, { useEffect } from 'react';
-import { KeyRound, Trash2 } from 'lucide-react';
 import { Input } from '@/components/input/input';
-import { generateDBFieldSuffix, type DBField } from '@/lib/domain/db-field';
-import type { DatabaseType, DBTable } from '@/lib/domain';
-import { useUpdateTableField } from '@/hooks/use-update-table-field';
+import { SelectBox } from '@/components/select-box/select-box';
 import {
     Tooltip,
     TooltipContent,
     TooltipTrigger,
 } from '@/components/tooltip/tooltip';
-import { useTranslation } from 'react-i18next';
-import { SelectBox } from '@/components/select-box/select-box';
-import { cn } from '@/lib/utils';
-import { TableFieldToggle } from './table-field-toggle';
+import { useChartDB } from '@/hooks/use-chartdb';
+import { useUpdateTableField } from '@/hooks/use-update-table-field';
 import { requiresNotNull } from '@/lib/data/data-types/data-types';
+import type { DatabaseType, DBTable } from '@/lib/domain';
+import { generateDBFieldSuffix, type DBField } from '@/lib/domain/db-field';
+import { cn } from '@/lib/utils';
+import { Eye, EyeOff, KeyRound, Trash2 } from 'lucide-react';
+import React, { useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { TableFieldToggle } from './table-field-toggle';
 
 export interface TableEditModeFieldProps {
     table: DBTable;
@@ -25,6 +26,7 @@ export interface TableEditModeFieldProps {
 export const TableEditModeField: React.FC<TableEditModeFieldProps> = React.memo(
     ({ table, field, focused = false, databaseType }) => {
         const { t } = useTranslation();
+        const { relationships } = useChartDB();
         const [showHighlight, setShowHighlight] = React.useState(false);
 
         const {
@@ -32,21 +34,34 @@ export const TableEditModeField: React.FC<TableEditModeFieldProps> = React.memo(
             handleDataTypeChange,
             handlePrimaryKeyToggle,
             handleNullableToggle,
+            handleShowWhenCollapsedToggle,
             handleNameChange,
             handleExampleChange,
+            handleCommentsChange,
             generateFieldSuffix,
             fieldName,
             example,
+            comments,
             nullable,
             primaryKey,
+            showWhenCollapsed,
             removeField,
         } = useUpdateTableField(table, field);
+
+        const isForeignKey = useMemo(
+            () =>
+                relationships.some(
+                    (rel) =>
+                        rel.sourceFieldId === field.id ||
+                        rel.targetFieldId === field.id
+                ),
+            [relationships, field.id]
+        );
 
         const inputRef = React.useRef<HTMLInputElement>(null);
 
         const typeRequiresNotNull = requiresNotNull(field.type.name);
 
-        // Animate the highlight after mount if focused
         useEffect(() => {
             if (focused) {
                 const timer = setTimeout(() => {
@@ -56,7 +71,7 @@ export const TableEditModeField: React.FC<TableEditModeFieldProps> = React.memo(
                     setTimeout(() => {
                         setShowHighlight(false);
                     }, 2000);
-                }, 200); // Small delay for the animation to be noticeable
+                }, 200);
 
                 return () => clearTimeout(timer);
             } else {
@@ -67,14 +82,14 @@ export const TableEditModeField: React.FC<TableEditModeFieldProps> = React.memo(
         return (
             <div
                 className={cn(
-                    'flex flex-1 flex-row justify-between gap-2 p-1 transition-colors duration-1000 ease-out',
+                    'flex flex-1 flex-row justify-between gap-2 border-b border-border/40 p-2 transition-colors duration-1000 ease-out last:border-b-0',
                     {
                         'bg-sky-100 dark:bg-sky-950': showHighlight,
                     }
                 )}
             >
-                <div className="flex flex-1 items-center justify-start gap-1 overflow-hidden">
-                    <span className="relative min-w-0 flex-1">
+                <div className="flex min-w-0 flex-1 items-center justify-start gap-1 overflow-hidden">
+                    <span className="relative min-w-0 flex-[2]">
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <Input
@@ -93,24 +108,28 @@ export const TableEditModeField: React.FC<TableEditModeFieldProps> = React.memo(
                             </TooltipTrigger>
                             <TooltipContent>{fieldName}</TooltipContent>
                         </Tooltip>
-                        {field.comments ? (
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <div className="absolute right-0 top-0 h-full w-[10px] cursor-pointer">
-                                        <div className="pointer-events-none absolute right-0 top-0 size-0 border-l-[10px] border-t-[10px] border-l-transparent border-t-pink-500" />
-                                    </div>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <div>
-                                        <div className="font-normal text-white/70 dark:text-black/70">
-                                            Comment:
-                                        </div>
-                                        <div>{field.comments}</div>
-                                    </div>
-                                </TooltipContent>
-                            </Tooltip>
-                        ) : null}
                     </span>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Input
+                                className="h-8 min-w-0 flex-[2] !truncate bg-background focus-visible:ring-0"
+                                type="text"
+                                placeholder={t(
+                                    'side_panel.tables_section.table.field_actions.no_comments'
+                                )}
+                                value={comments}
+                                onChange={(e) =>
+                                    handleCommentsChange(e.target.value)
+                                }
+                            />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            {comments ||
+                                t(
+                                    'side_panel.tables_section.table.field_actions.comments'
+                                )}
+                        </TooltipContent>
+                    </Tooltip>
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Input
@@ -134,7 +153,7 @@ export const TableEditModeField: React.FC<TableEditModeFieldProps> = React.memo(
                     </Tooltip>
                     <Tooltip>
                         <TooltipTrigger
-                            className="flex h-8 min-w-0 flex-1"
+                            className="flex h-8 w-[8.5rem] shrink-0"
                             asChild
                         >
                             <span>
@@ -176,6 +195,38 @@ export const TableEditModeField: React.FC<TableEditModeFieldProps> = React.memo(
                         <TooltipTrigger asChild>
                             <span>
                                 <TableFieldToggle
+                                    pressed={showWhenCollapsed}
+                                    onPressedChange={
+                                        handleShowWhenCollapsedToggle
+                                    }
+                                >
+                                    {showWhenCollapsed ? (
+                                        <Eye className="h-3.5" />
+                                    ) : (
+                                        <EyeOff className="h-3.5" />
+                                    )}
+                                </TableFieldToggle>
+                            </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <div>
+                                {t(
+                                    'side_panel.tables_section.table.field_actions.show_when_collapsed'
+                                )}
+                            </div>
+                            {primaryKey || isForeignKey ? (
+                                <div className="mt-1 text-xs opacity-80">
+                                    {t(
+                                        'side_panel.tables_section.table.field_actions.show_when_collapsed_pk_fk_hint'
+                                    )}
+                                </div>
+                            ) : null}
+                        </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span>
+                                <TableFieldToggle
                                     pressed={nullable}
                                     onPressedChange={handleNullableToggle}
                                     disabled={typeRequiresNotNull || primaryKey}
@@ -203,7 +254,6 @@ export const TableEditModeField: React.FC<TableEditModeFieldProps> = React.memo(
                             {t('side_panel.tables_section.table.primary_key')}
                         </TooltipContent>
                     </Tooltip>
-
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <span>

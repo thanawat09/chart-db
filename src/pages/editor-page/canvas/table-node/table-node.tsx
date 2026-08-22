@@ -12,11 +12,13 @@ import { useLayout } from '@/hooks/use-layout';
 import type { DBField } from '@/lib/domain/db-field';
 import {
     MAX_TABLE_SIZE,
-    MID_TABLE_SIZE,
     MIN_TABLE_SIZE,
-    TABLE_MINIMIZED_FIELDS,
     type DBTable,
 } from '@/lib/domain/db-table';
+import {
+    getCollapsedVisibleFields,
+    needsShowMore,
+} from '@/lib/domain/field-collapsed-visibility';
 import { cn } from '@/lib/utils';
 import type { Node, NodeProps } from '@xyflow/react';
 import {
@@ -28,10 +30,8 @@ import {
 } from '@xyflow/react';
 import {
     ChevronDown,
-    ChevronsLeftRight,
-    ChevronsRightLeft,
     ChevronUp,
-    CircleDotDashed,
+    Pencil,
     SquareDot,
     SquareMinus,
     SquarePlus,
@@ -88,11 +88,7 @@ export const TableNode: React.FC<NodeProps<TableNodeType>> = React.memo(
     }) => {
         const { updateTable, relationships, readonly } = useChartDB();
         const edges = useStore((store) => store.edges) as EdgeType[];
-        const {
-            openTableFromSidebar,
-            selectSidebarSection,
-            closeAllTablesInSidebar,
-        } = useLayout();
+        const { closeAllTablesInSidebar } = useLayout();
         const [expanded, setExpanded] = useState(table.expanded ?? false);
         const { t } = useTranslation();
         const [isHovering, setIsHovering] = useState(false);
@@ -119,10 +115,6 @@ export const TableNode: React.FC<NodeProps<TableNodeType>> = React.memo(
             [table.comments]
         );
 
-        // Store the initial field count when entering edit mode to keep table height fixed
-        const [editModeInitialFieldCount, setEditModeInitialFieldCount] =
-            useState<number | null>(null);
-
         const connection = useConnection();
 
         const isTarget = useMemo(() => {
@@ -141,17 +133,6 @@ export const TableNode: React.FC<NodeProps<TableNodeType>> = React.memo(
         } = useDiff();
 
         const fields = useMemo(() => table.fields, [table.fields]);
-
-        // Effect to manage field count when entering/exiting edit mode
-        useEffect(() => {
-            if (editTableMode && editModeInitialFieldCount === null) {
-                // Entering edit mode - capture current field count
-                setEditModeInitialFieldCount(fields.length);
-            } else if (!editTableMode && editModeInitialFieldCount !== null) {
-                // Exiting edit mode - reset
-                setEditModeInitialFieldCount(null);
-            }
-        }, [editTableMode, fields.length, editModeInitialFieldCount]);
 
         const tableChangedName = useMemo(
             () => getTableNewName({ tableId: table.id }),
@@ -249,26 +230,6 @@ export const TableNode: React.FC<NodeProps<TableNodeType>> = React.memo(
             [selected, dragging, isHovering]
         );
 
-        const openTableInEditor = useCallback(() => {
-            selectSidebarSection('tables');
-            openTableFromSidebar(table.id);
-        }, [selectSidebarSection, openTableFromSidebar, table.id]);
-
-        const expandTable = useCallback(() => {
-            updateTable(table.id, {
-                width:
-                    (table.width ?? MIN_TABLE_SIZE) < MID_TABLE_SIZE
-                        ? MID_TABLE_SIZE
-                        : MAX_TABLE_SIZE,
-            });
-        }, [table.id, table.width, updateTable]);
-
-        const shrinkTable = useCallback(() => {
-            updateTable(table.id, {
-                width: MIN_TABLE_SIZE,
-            });
-        }, [table.id, updateTable]);
-
         const toggleExpand = useCallback(() => {
             setExpanded((prev) => {
                 const value = !prev;
@@ -286,59 +247,19 @@ export const TableNode: React.FC<NodeProps<TableNodeType>> = React.memo(
             return fieldIds;
         }, [relationships]);
 
-        const visibleFields = useMemo(() => {
-            // If in edit mode, use the initial field count to keep consistent height
-            const fieldsToConsider =
-                editTableMode && editModeInitialFieldCount !== null
-                    ? fields.slice(0, editModeInitialFieldCount)
-                    : fields;
+        const fieldsToConsider = fields;
 
-            if (expanded || fieldsToConsider.length <= TABLE_MINIMIZED_FIELDS) {
+        const visibleFields = useMemo(() => {
+            if (expanded) {
                 return fieldsToConsider;
             }
+            return getCollapsedVisibleFields(fieldsToConsider, relatedFieldIds);
+        }, [expanded, fieldsToConsider, relatedFieldIds]);
 
-            const mustDisplayedFields: DBField[] = [];
-            const nonMustDisplayedFields: DBField[] = [];
-
-            for (const field of fieldsToConsider) {
-                if (relatedFieldIds.has(field.id) || field.primaryKey) {
-                    mustDisplayedFields.push(field);
-                } else {
-                    nonMustDisplayedFields.push(field);
-                }
-            }
-
-            // Take required fields up to limit
-            const visibleMustDisplayedFields = mustDisplayedFields.slice(
-                0,
-                TABLE_MINIMIZED_FIELDS
-            );
-            const remainingSlots =
-                TABLE_MINIMIZED_FIELDS - visibleMustDisplayedFields.length;
-
-            // Fill remaining slots with non-required fields
-            const visibleNonMustDisplayedFields =
-                remainingSlots > 0
-                    ? nonMustDisplayedFields.slice(0, remainingSlots)
-                    : [];
-
-            // Combine and maintain original order
-            const visibleFieldsSet = new Set([
-                ...visibleMustDisplayedFields,
-                ...visibleNonMustDisplayedFields,
-            ]);
-            const result = fieldsToConsider.filter((field) =>
-                visibleFieldsSet.has(field)
-            );
-
-            return result;
-        }, [
-            expanded,
-            fields,
-            relatedFieldIds,
-            editTableMode,
-            editModeInitialFieldCount,
-        ]);
+        const showMoreFooter = useMemo(
+            () => needsShowMore(fieldsToConsider, relatedFieldIds),
+            [fieldsToConsider, relatedFieldIds]
+        );
 
         const isPartOfCreatingRelationship = useMemo(
             () =>
@@ -383,9 +304,7 @@ export const TableNode: React.FC<NodeProps<TableNodeType>> = React.memo(
                         : '',
                     isDiffTableRemoved
                         ? 'outline outline-[3px] outline-red-500 dark:outline-red-900 outline-offset-[5px]'
-                        : editTableMode
-                          ? 'invisible'
-                          : ''
+                        : ''
                 ),
             [
                 selected,
@@ -398,7 +317,6 @@ export const TableNode: React.FC<NodeProps<TableNodeType>> = React.memo(
                 isDiffNewTable,
                 isDiffTableRemoved,
                 isTarget,
-                editTableMode,
                 isPartOfCreatingRelationship,
                 table.isView,
             ]
@@ -568,7 +486,9 @@ export const TableNode: React.FC<NodeProps<TableNodeType>> = React.memo(
                                 </Label>
                             ) : isDiffNewTable ? (
                                 <Label className="flex h-5 items-center truncate rounded-sm bg-green-200 px-2 py-0.5 text-sm font-normal text-green-900 dark:bg-green-800 dark:text-green-200">
-                                    <span className="truncate">{table.name}</span>
+                                    <span className="truncate">
+                                        {table.name}
+                                    </span>
                                     {tableComment ? (
                                         <span className="ml-1 truncate font-normal opacity-70">
                                             ({tableComment})
@@ -577,7 +497,9 @@ export const TableNode: React.FC<NodeProps<TableNodeType>> = React.memo(
                                 </Label>
                             ) : isDiffTableRemoved ? (
                                 <Label className="flex h-5 items-center truncate rounded-sm bg-red-200 px-2 py-0.5 text-sm font-normal text-red-900 dark:bg-red-800 dark:text-red-200">
-                                    <span className="truncate">{table.name}</span>
+                                    <span className="truncate">
+                                        {table.name}
+                                    </span>
                                     {tableComment ? (
                                         <span className="ml-1 truncate font-normal opacity-70">
                                             ({tableComment})
@@ -586,7 +508,9 @@ export const TableNode: React.FC<NodeProps<TableNodeType>> = React.memo(
                                 </Label>
                             ) : isDiffTableChanged && !isSummaryOnly ? (
                                 <Label className="flex h-5 items-center truncate rounded-sm bg-sky-200 px-2 py-0.5 text-sm font-normal text-sky-900 dark:bg-sky-800 dark:text-sky-200">
-                                    <span className="truncate">{table.name}</span>
+                                    <span className="truncate">
+                                        {table.name}
+                                    </span>
                                     {tableComment ? (
                                         <span className="ml-1 truncate font-normal opacity-70">
                                             ({tableComment})
@@ -595,7 +519,9 @@ export const TableNode: React.FC<NodeProps<TableNodeType>> = React.memo(
                                 </Label>
                             ) : (
                                 <Label className="flex min-w-0 items-center truncate px-2 py-0.5 text-sm font-bold">
-                                    <span className="truncate">{table.name}</span>
+                                    <span className="truncate">
+                                        {table.name}
+                                    </span>
                                     {tableComment ? (
                                         <span className="ml-1 truncate font-normal text-muted-foreground">
                                             ({tableComment})
@@ -609,34 +535,19 @@ export const TableNode: React.FC<NodeProps<TableNodeType>> = React.memo(
                                 <Button
                                     variant="ghost"
                                     className="size-6 p-0 text-slate-500 hover:bg-primary-foreground hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-                                    onClick={openTableInEditor}
+                                    onClick={enterEditTableMode}
                                 >
-                                    <CircleDotDashed className="size-4" />
+                                    <Pencil className="size-3.5 text-pink-600" />
                                 </Button>
                             )}
-                            <Button
-                                variant="ghost"
-                                className="size-6 p-0 text-slate-500 hover:bg-primary-foreground hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-                                onClick={
-                                    table.width !== MAX_TABLE_SIZE
-                                        ? expandTable
-                                        : shrinkTable
-                                }
-                            >
-                                {table.width !== MAX_TABLE_SIZE ? (
-                                    <ChevronsLeftRight className="size-4" />
-                                ) : (
-                                    <ChevronsRightLeft className="size-4" />
-                                )}
-                            </Button>
                         </div>
                     </div>
                     <div
                         className="transition-[max-height] duration-200 ease-in-out"
                         style={{
                             maxHeight: expanded
-                                ? `${(editTableMode && editModeInitialFieldCount !== null ? editModeInitialFieldCount : fields.length) * 2}rem` // h-8 per field
-                                : `${TABLE_MINIMIZED_FIELDS * 2}rem`, // h-8 per field
+                                ? `${fieldsToConsider.length * 2}rem` // h-8 per field
+                                : `${visibleFields.length * 2}rem`, // h-8 per field
                         }}
                     >
                         {visibleFields.map((field: DBField) => (
@@ -652,9 +563,7 @@ export const TableNode: React.FC<NodeProps<TableNodeType>> = React.memo(
                             />
                         ))}
                     </div>
-                    {(editTableMode && editModeInitialFieldCount !== null
-                        ? editModeInitialFieldCount
-                        : fields.length) > TABLE_MINIMIZED_FIELDS && (
+                    {showMoreFooter && (
                         <div
                             className="z-10 flex h-8 cursor-pointer items-center justify-center rounded-b-md border-t text-xs text-muted-foreground transition-colors duration-200 hover:bg-slate-100 dark:hover:bg-slate-800"
                             onClick={toggleExpand}
