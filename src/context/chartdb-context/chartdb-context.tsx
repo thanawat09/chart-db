@@ -14,6 +14,8 @@ import { EventEmitter } from 'ahooks/lib/useEventEmitter';
 import type { Area } from '@/lib/domain/area';
 import type { DBCustomType } from '@/lib/domain/db-custom-type';
 import type { Note } from '@/lib/domain/note';
+import type { Text } from '@/lib/domain/text';
+import type { VisualConnector } from '@/lib/domain/visual-connector';
 
 export type ChartDBEventType =
     | 'add_tables'
@@ -77,6 +79,8 @@ export interface ChartDBContext {
     areas: Area[];
     customTypes: DBCustomType[];
     notes: Note[];
+    texts: Text[];
+    visualConnectors: VisualConnector[];
     currentDiagram: Diagram;
     events: EventEmitter<ChartDBEvent>;
     readonly?: boolean;
@@ -302,6 +306,58 @@ export interface ChartDBContext {
         options?: { updateHistory: boolean }
     ) => Promise<void>;
 
+    // Text operations
+    createText: (attributes?: Partial<Omit<Text, 'id'>>) => Promise<Text>;
+    addText: (
+        text: Text,
+        options?: { updateHistory: boolean }
+    ) => Promise<void>;
+    addTexts: (
+        texts: Text[],
+        options?: { updateHistory: boolean }
+    ) => Promise<void>;
+    getText: (id: string) => Text | null;
+    removeText: (
+        id: string,
+        options?: { updateHistory: boolean }
+    ) => Promise<void>;
+    removeTexts: (
+        ids: string[],
+        options?: { updateHistory: boolean }
+    ) => Promise<void>;
+    updateText: (
+        id: string,
+        text: Partial<Text>,
+        options?: { updateHistory: boolean }
+    ) => Promise<void>;
+
+    // Visual connector operations
+    createVisualConnector: (
+        attributes?: Partial<Omit<VisualConnector, 'id'>>
+    ) => Promise<VisualConnector>;
+    addVisualConnector: (
+        visualConnector: VisualConnector,
+        options?: { updateHistory: boolean }
+    ) => Promise<void>;
+    addVisualConnectors: (
+        visualConnectors: VisualConnector[],
+        options?: { updateHistory: boolean }
+    ) => Promise<void>;
+    getVisualConnector: (id: string) => VisualConnector | null;
+    removeVisualConnector: (
+        id: string,
+        options?: { updateHistory: boolean }
+    ) => Promise<void>;
+    removeVisualConnectors: (
+        ids: string[],
+        options?: { updateHistory: boolean }
+    ) => Promise<void>;
+    updateVisualConnector: (
+        id: string,
+        visualConnector: Partial<VisualConnector>,
+        options?: { updateHistory: boolean }
+    ) => Promise<void>;
+
     // Custom type operations
     createCustomType: (
         attributes?: Partial<Omit<DBCustomType, 'id'>>
@@ -340,6 +396,8 @@ export const chartDBContext = createContext<ChartDBContext>({
     areas: [],
     customTypes: [],
     notes: [],
+    texts: [],
+    visualConnectors: [],
     schemas: [],
     highlightCustomTypeId: emptyFn,
     currentDiagram: {
@@ -430,6 +488,24 @@ export const chartDBContext = createContext<ChartDBContext>({
     removeNote: emptyFn,
     removeNotes: emptyFn,
     updateNote: emptyFn,
+
+    // Text operations
+    createText: emptyFn,
+    addText: emptyFn,
+    addTexts: emptyFn,
+    getText: emptyFn,
+    removeText: emptyFn,
+    removeTexts: emptyFn,
+    updateText: emptyFn,
+
+    // Visual connector operations
+    createVisualConnector: emptyFn,
+    addVisualConnector: emptyFn,
+    addVisualConnectors: emptyFn,
+    getVisualConnector: emptyFn,
+    removeVisualConnector: emptyFn,
+    removeVisualConnectors: emptyFn,
+    updateVisualConnector: emptyFn,
 
     // Custom type operations
     createCustomType: emptyFn,

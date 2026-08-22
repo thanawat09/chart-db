@@ -32,6 +32,13 @@ import { useEventEmitter } from 'ahooks';
 import type { DBDependency } from '@/lib/domain/db-dependency';
 import type { Area } from '@/lib/domain/area';
 import type { Note } from '@/lib/domain/note';
+import { createDefaultText, type Text } from '@/lib/domain/text';
+import {
+    DEFAULT_VISUAL_CONNECTOR_COLOR,
+    getConnectorIdsForEndpoint,
+    type VisualConnector,
+    type VisualConnectorEndpointType,
+} from '@/lib/domain/visual-connector';
 import { storageInitialValue } from '../storage-context/storage-context';
 import { useDiff } from '../diff-context/use-diff';
 import type { DiffCalculatedEvent } from '../diff-context/diff-context';
@@ -81,6 +88,10 @@ export const ChartDBProvider: React.FC<
         diagram?.customTypes ?? []
     );
     const [notes, setNotes] = useState<Note[]>(diagram?.notes ?? []);
+    const [texts, setTexts] = useState<Text[]>(diagram?.texts ?? []);
+    const [visualConnectors, setVisualConnectors] = useState<
+        VisualConnector[]
+    >(diagram?.visualConnectors ?? []);
 
     const didMigrateShowWhenCollapsed = useRef(false);
 
@@ -166,6 +177,8 @@ export const ChartDBProvider: React.FC<
             areas,
             customTypes,
             notes,
+            texts,
+            visualConnectors,
         }),
         [
             diagramId,
@@ -178,6 +191,8 @@ export const ChartDBProvider: React.FC<
             areas,
             customTypes,
             notes,
+            texts,
+            visualConnectors,
             diagramCreatedAt,
             diagramUpdatedAt,
         ]
@@ -192,6 +207,8 @@ export const ChartDBProvider: React.FC<
             setAreas([]);
             setCustomTypes([]);
             setNotes([]);
+            setTexts([]);
+            setVisualConnectors([]);
             setDiagramUpdatedAt(updatedAt);
 
             resetRedoStack();
@@ -205,6 +222,8 @@ export const ChartDBProvider: React.FC<
                 db.deleteDiagramAreas(diagramId),
                 db.deleteDiagramCustomTypes(diagramId),
                 db.deleteDiagramNotes(diagramId),
+                db.deleteDiagramTexts(diagramId),
+                db.deleteDiagramVisualConnectors(diagramId),
             ]);
         }, [db, diagramId, resetRedoStack, resetUndoStack]);
 
@@ -220,6 +239,8 @@ export const ChartDBProvider: React.FC<
             setAreas([]);
             setCustomTypes([]);
             setNotes([]);
+            setTexts([]);
+            setVisualConnectors([]);
             resetRedoStack();
             resetUndoStack();
 
@@ -231,6 +252,8 @@ export const ChartDBProvider: React.FC<
                 db.deleteDiagramAreas(diagramId),
                 db.deleteDiagramCustomTypes(diagramId),
                 db.deleteDiagramNotes(diagramId),
+                db.deleteDiagramTexts(diagramId),
+                db.deleteDiagramVisualConnectors(diagramId),
             ]);
         }, [db, diagramId, resetRedoStack, resetUndoStack]);
 
@@ -1737,8 +1760,377 @@ export const ChartDBProvider: React.FC<
         [areas]
     );
 
+    // Visual connector operations
+    const addVisualConnectors: ChartDBContext['addVisualConnectors'] =
+        useCallback(
+            async (
+                visualConnectorsToAdd: VisualConnector[],
+                options = { updateHistory: true }
+            ) => {
+                setVisualConnectors((current) => [
+                    ...current,
+                    ...visualConnectorsToAdd,
+                ]);
+
+                const updatedAt = new Date();
+                setDiagramUpdatedAt(updatedAt);
+
+                await Promise.all([
+                    ...visualConnectorsToAdd.map((visualConnector) =>
+                        db.addVisualConnector({ diagramId, visualConnector })
+                    ),
+                    db.updateDiagram({
+                        id: diagramId,
+                        attributes: { updatedAt },
+                    }),
+                ]);
+
+                if (options.updateHistory) {
+                    addUndoAction({
+                        action: 'addVisualConnectors',
+                        redoData: { visualConnectors: visualConnectorsToAdd },
+                        undoData: {
+                            visualConnectorIds: visualConnectorsToAdd.map(
+                                (c) => c.id
+                            ),
+                        },
+                    });
+                    resetRedoStack();
+                }
+            },
+            [db, diagramId, addUndoAction, resetRedoStack]
+        );
+
+    const addVisualConnector: ChartDBContext['addVisualConnector'] =
+        useCallback(
+            async (
+                visualConnector: VisualConnector,
+                options = { updateHistory: true }
+            ) => {
+                return addVisualConnectors([visualConnector], options);
+            },
+            [addVisualConnectors]
+        );
+
+    const createVisualConnector: ChartDBContext['createVisualConnector'] =
+        useCallback(
+            async (attributes) => {
+                const visualConnector: VisualConnector = {
+                    id: generateId(),
+                    sourceType: attributes!.sourceType!,
+                    sourceId: attributes!.sourceId!,
+                    targetType: attributes!.targetType!,
+                    targetId: attributes!.targetId!,
+                    sourceHandle: attributes?.sourceHandle,
+                    targetHandle: attributes?.targetHandle,
+                    strokeColor:
+                        attributes?.strokeColor ?? DEFAULT_VISUAL_CONNECTOR_COLOR,
+                    strokeStyle: attributes?.strokeStyle ?? 'solid',
+                    arrowDirection: attributes?.arrowDirection ?? 'forward',
+                };
+
+                await addVisualConnector(visualConnector);
+
+                return visualConnector;
+            },
+            [addVisualConnector]
+        );
+
+    const getVisualConnector: ChartDBContext['getVisualConnector'] =
+        useCallback(
+            (id: string) =>
+                visualConnectors.find((connector) => connector.id === id) ??
+                null,
+            [visualConnectors]
+        );
+
+    const removeVisualConnectors: ChartDBContext['removeVisualConnectors'] =
+        useCallback(
+            async (ids: string[], options = { updateHistory: true }) => {
+                const prevVisualConnectors = [
+                    ...visualConnectors.filter((connector) =>
+                        ids.includes(connector.id)
+                    ),
+                ];
+
+                setVisualConnectors((connectors) =>
+                    connectors.filter((connector) => !ids.includes(connector.id))
+                );
+
+                const updatedAt = new Date();
+                setDiagramUpdatedAt(updatedAt);
+
+                await Promise.all([
+                    ...ids.map((id) =>
+                        db.deleteVisualConnector({ diagramId, id })
+                    ),
+                    db.updateDiagram({
+                        id: diagramId,
+                        attributes: { updatedAt },
+                    }),
+                ]);
+
+                if (prevVisualConnectors.length > 0 && options.updateHistory) {
+                    addUndoAction({
+                        action: 'removeVisualConnectors',
+                        redoData: { visualConnectorIds: ids },
+                        undoData: { visualConnectors: prevVisualConnectors },
+                    });
+                    resetRedoStack();
+                }
+            },
+            [
+                db,
+                diagramId,
+                visualConnectors,
+                addUndoAction,
+                resetRedoStack,
+            ]
+        );
+
+    const removeVisualConnector: ChartDBContext['removeVisualConnector'] =
+        useCallback(
+            async (id: string, options = { updateHistory: true }) => {
+                return removeVisualConnectors([id], options);
+            },
+            [removeVisualConnectors]
+        );
+
+    const updateVisualConnector: ChartDBContext['updateVisualConnector'] =
+        useCallback(
+            async (
+                id: string,
+                visualConnector: Partial<VisualConnector>,
+                options = { updateHistory: true }
+            ) => {
+                const prevVisualConnector = getVisualConnector(id);
+
+                setVisualConnectors((connectors) =>
+                    connectors.map((connector) =>
+                        connector.id === id
+                            ? { ...connector, ...visualConnector }
+                            : connector
+                    )
+                );
+
+                const updatedAt = new Date();
+                setDiagramUpdatedAt(updatedAt);
+
+                await Promise.all([
+                    db.updateDiagram({
+                        id: diagramId,
+                        attributes: { updatedAt },
+                    }),
+                    db.updateVisualConnector({
+                        id,
+                        attributes: visualConnector,
+                    }),
+                ]);
+
+                if (!!prevVisualConnector && options.updateHistory) {
+                    addUndoAction({
+                        action: 'updateVisualConnector',
+                        redoData: {
+                            visualConnectorId: id,
+                            visualConnector,
+                        },
+                        undoData: {
+                            visualConnectorId: id,
+                            visualConnector: prevVisualConnector,
+                        },
+                    });
+                    resetRedoStack();
+                }
+            },
+            [
+                db,
+                diagramId,
+                getVisualConnector,
+                addUndoAction,
+                resetRedoStack,
+            ]
+        );
+
+    // Text operations
+    const addTexts: ChartDBContext['addTexts'] = useCallback(
+        async (textsToAdd: Text[], options = { updateHistory: true }) => {
+            setTexts((currentTexts) => [...currentTexts, ...textsToAdd]);
+
+            const updatedAt = new Date();
+            setDiagramUpdatedAt(updatedAt);
+
+            await Promise.all([
+                ...textsToAdd.map((text) => db.addText({ diagramId, text })),
+                db.updateDiagram({ id: diagramId, attributes: { updatedAt } }),
+            ]);
+
+            if (options.updateHistory) {
+                addUndoAction({
+                    action: 'addTexts',
+                    redoData: { texts: textsToAdd },
+                    undoData: { textIds: textsToAdd.map((t) => t.id) },
+                });
+                resetRedoStack();
+            }
+        },
+        [db, diagramId, addUndoAction, resetRedoStack]
+    );
+
+    const addText: ChartDBContext['addText'] = useCallback(
+        async (text: Text, options = { updateHistory: true }) => {
+            return addTexts([text], options);
+        },
+        [addTexts]
+    );
+
+    const createText: ChartDBContext['createText'] = useCallback(
+        async (attributes) => {
+            const text = createDefaultText({
+                id: generateId(),
+                ...attributes,
+            });
+
+            await addText(text);
+
+            return text;
+        },
+        [addText]
+    );
+
+    const getText: ChartDBContext['getText'] = useCallback(
+        (id: string) => texts.find((text) => text.id === id) ?? null,
+        [texts]
+    );
+
+    const removeTexts: ChartDBContext['removeTexts'] = useCallback(
+        async (ids: string[], options = { updateHistory: true }) => {
+            const connectorIds = [
+                ...new Set(
+                    ids.flatMap((id) =>
+                        getConnectorIdsForEndpoint(
+                            visualConnectors,
+                            'text',
+                            id
+                        )
+                    )
+                ),
+            ];
+
+            if (connectorIds.length > 0) {
+                await removeVisualConnectors(connectorIds, {
+                    updateHistory: options.updateHistory,
+                });
+            }
+
+            const prevTexts = [
+                ...texts.filter((text) => ids.includes(text.id)),
+            ];
+
+            setTexts((currentTexts) =>
+                currentTexts.filter((text) => !ids.includes(text.id))
+            );
+
+            const updatedAt = new Date();
+            setDiagramUpdatedAt(updatedAt);
+
+            await Promise.all([
+                ...ids.map((id) => db.deleteText({ diagramId, id })),
+                db.updateDiagram({ id: diagramId, attributes: { updatedAt } }),
+            ]);
+
+            if (prevTexts.length > 0 && options.updateHistory) {
+                addUndoAction({
+                    action: 'removeTexts',
+                    redoData: { textIds: ids },
+                    undoData: { texts: prevTexts },
+                });
+                resetRedoStack();
+            }
+        },
+        [
+            db,
+            diagramId,
+            texts,
+            visualConnectors,
+            removeVisualConnectors,
+            addUndoAction,
+            resetRedoStack,
+        ]
+    );
+
+    const removeText: ChartDBContext['removeText'] = useCallback(
+        async (id: string, options = { updateHistory: true }) => {
+            return removeTexts([id], options);
+        },
+        [removeTexts]
+    );
+
+    const updateText: ChartDBContext['updateText'] = useCallback(
+        async (
+            id: string,
+            text: Partial<Text>,
+            options = { updateHistory: true }
+        ) => {
+            const prevText = getText(id);
+
+            setTexts((currentTexts) =>
+                currentTexts.map((t) => (t.id === id ? { ...t, ...text } : t))
+            );
+
+            const updatedAt = new Date();
+            setDiagramUpdatedAt(updatedAt);
+
+            await Promise.all([
+                db.updateDiagram({ id: diagramId, attributes: { updatedAt } }),
+                db.updateText({ id, attributes: text }),
+            ]);
+
+            if (!!prevText && options.updateHistory) {
+                addUndoAction({
+                    action: 'updateText',
+                    redoData: { textId: id, text },
+                    undoData: { textId: id, text: prevText },
+                });
+                resetRedoStack();
+            }
+        },
+        [db, diagramId, getText, addUndoAction, resetRedoStack]
+    );
+
     const removeAreas: ChartDBContext['removeAreas'] = useCallback(
         async (ids: string[], options = { updateHistory: true }) => {
+            const connectorIds = [
+                ...new Set(
+                    ids.flatMap((id) =>
+                        getConnectorIdsForEndpoint(
+                            visualConnectors,
+                            'area',
+                            id
+                        )
+                    )
+                ),
+            ];
+
+            if (connectorIds.length > 0) {
+                await removeVisualConnectors(connectorIds, {
+                    updateHistory: options.updateHistory,
+                });
+            }
+
+            const textsInAreas = texts.filter(
+                (text) =>
+                    text.parentAreaId != null &&
+                    ids.includes(text.parentAreaId)
+            );
+
+            for (const text of textsInAreas) {
+                await updateText(
+                    text.id,
+                    { parentAreaId: null },
+                    { updateHistory: options.updateHistory }
+                );
+            }
+
             const prevAreas = [
                 ...areas.filter((area) => ids.includes(area.id)),
             ];
@@ -1762,7 +2154,18 @@ export const ChartDBProvider: React.FC<
                 resetRedoStack();
             }
         },
-        [db, diagramId, setAreas, areas, addUndoAction, resetRedoStack]
+        [
+            db,
+            diagramId,
+            setAreas,
+            areas,
+            texts,
+            visualConnectors,
+            removeVisualConnectors,
+            updateText,
+            addUndoAction,
+            resetRedoStack,
+        ]
     );
 
     const removeArea: ChartDBContext['removeArea'] = useCallback(
@@ -1863,6 +2266,24 @@ export const ChartDBProvider: React.FC<
 
     const removeNotes: ChartDBContext['removeNotes'] = useCallback(
         async (ids: string[], options = { updateHistory: true }) => {
+            const connectorIds = [
+                ...new Set(
+                    ids.flatMap((id) =>
+                        getConnectorIdsForEndpoint(
+                            visualConnectors,
+                            'note',
+                            id
+                        )
+                    )
+                ),
+            ];
+
+            if (connectorIds.length > 0) {
+                await removeVisualConnectors(connectorIds, {
+                    updateHistory: options.updateHistory,
+                });
+            }
+
             const prevNotes = [
                 ...notes.filter((note) => ids.includes(note.id)),
             ];
@@ -1886,7 +2307,16 @@ export const ChartDBProvider: React.FC<
                 resetRedoStack();
             }
         },
-        [db, diagramId, setNotes, notes, addUndoAction, resetRedoStack]
+        [
+            db,
+            diagramId,
+            setNotes,
+            notes,
+            visualConnectors,
+            removeVisualConnectors,
+            addUndoAction,
+            resetRedoStack,
+        ]
     );
 
     const removeNote: ChartDBContext['removeNote'] = useCallback(
@@ -1957,6 +2387,31 @@ export const ChartDBProvider: React.FC<
                 setHighlightedCustomTypeId(undefined);
                 setNotes(diagram.notes ?? []);
 
+                const loadedTexts = diagram.texts ?? [];
+                const loadedNotes = diagram.notes ?? [];
+                const loadedAreas = diagram.areas ?? [];
+                setTexts(loadedTexts);
+
+                const idsByType: Record<
+                    VisualConnectorEndpointType,
+                    Set<string>
+                > = {
+                    text: new Set(loadedTexts.map((text) => text.id)),
+                    note: new Set(loadedNotes.map((note) => note.id)),
+                    area: new Set(loadedAreas.map((area) => area.id)),
+                };
+
+                const filteredVisualConnectors = (
+                    diagram.visualConnectors ?? []
+                ).filter(
+                    (connector) =>
+                        idsByType[connector.sourceType]?.has(
+                            connector.sourceId
+                        ) &&
+                        idsByType[connector.targetType]?.has(connector.targetId)
+                );
+                setVisualConnectors(filteredVisualConnectors);
+
                 events.emit({ action: 'load_diagram', data: { diagram } });
 
                 resetRedoStack();
@@ -1977,6 +2432,8 @@ export const ChartDBProvider: React.FC<
                 setHighlightedCustomTypeId,
                 events,
                 setNotes,
+                setTexts,
+                setVisualConnectors,
                 resetRedoStack,
                 resetUndoStack,
             ]
@@ -2001,6 +2458,8 @@ export const ChartDBProvider: React.FC<
                 includeAreas: true,
                 includeCustomTypes: true,
                 includeNotes: true,
+                includeTexts: true,
+                includeVisualConnectors: true,
             });
 
             if (diagram) {
@@ -2167,6 +2626,8 @@ export const ChartDBProvider: React.FC<
                 dependencies,
                 areas,
                 notes,
+                texts,
+                visualConnectors,
                 currentDiagram,
                 schemas,
                 events,
@@ -2241,6 +2702,20 @@ export const ChartDBProvider: React.FC<
                 removeNote,
                 removeNotes,
                 updateNote,
+                createText,
+                addText,
+                addTexts,
+                getText,
+                removeText,
+                removeTexts,
+                updateText,
+                createVisualConnector,
+                addVisualConnector,
+                addVisualConnectors,
+                getVisualConnector,
+                removeVisualConnector,
+                removeVisualConnectors,
+                updateVisualConnector,
             }}
         >
             {children}

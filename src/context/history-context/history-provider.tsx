@@ -45,6 +45,12 @@ export const HistoryProvider: React.FC<React.PropsWithChildren> = ({
         addNotes,
         removeNotes,
         updateNote,
+        addTexts,
+        removeTexts,
+        updateText,
+        addVisualConnectors,
+        removeVisualConnectors,
+        updateVisualConnector,
     } = useChartDB();
 
     const redoActionHandlers = useMemo(
@@ -174,6 +180,36 @@ export const HistoryProvider: React.FC<React.PropsWithChildren> = ({
             updateNote: ({ redoData: { noteId, note } }) => {
                 return updateNote(noteId, note, { updateHistory: false });
             },
+            addTexts: ({ redoData: { texts } }) => {
+                return addTexts(texts, { updateHistory: false });
+            },
+            removeTexts: ({ redoData: { textIds } }) => {
+                return removeTexts(textIds, { updateHistory: false });
+            },
+            updateText: ({ redoData: { textId, text } }) => {
+                return updateText(textId, text, { updateHistory: false });
+            },
+            addVisualConnectors: ({ redoData: { visualConnectors } }) => {
+                return addVisualConnectors(visualConnectors, {
+                    updateHistory: false,
+                });
+            },
+            removeVisualConnectors: ({
+                redoData: { visualConnectorIds },
+            }) => {
+                return removeVisualConnectors(visualConnectorIds, {
+                    updateHistory: false,
+                });
+            },
+            updateVisualConnector: ({
+                redoData: { visualConnectorId, visualConnector },
+            }) => {
+                return updateVisualConnector(
+                    visualConnectorId,
+                    visualConnector,
+                    { updateHistory: false }
+                );
+            },
         }),
         [
             addTables,
@@ -205,6 +241,12 @@ export const HistoryProvider: React.FC<React.PropsWithChildren> = ({
             addNotes,
             removeNotes,
             updateNote,
+            addTexts,
+            removeTexts,
+            updateText,
+            addVisualConnectors,
+            removeVisualConnectors,
+            updateVisualConnector,
         ]
     );
 
@@ -347,6 +389,34 @@ export const HistoryProvider: React.FC<React.PropsWithChildren> = ({
             updateNote: ({ undoData: { noteId, note } }) => {
                 return updateNote(noteId, note, { updateHistory: false });
             },
+            addTexts: ({ undoData: { textIds } }) => {
+                return removeTexts(textIds, { updateHistory: false });
+            },
+            removeTexts: ({ undoData: { texts } }) => {
+                return addTexts(texts, { updateHistory: false });
+            },
+            updateText: ({ undoData: { textId, text } }) => {
+                return updateText(textId, text, { updateHistory: false });
+            },
+            addVisualConnectors: ({ undoData: { visualConnectorIds } }) => {
+                return removeVisualConnectors(visualConnectorIds, {
+                    updateHistory: false,
+                });
+            },
+            removeVisualConnectors: ({ undoData: { visualConnectors } }) => {
+                return addVisualConnectors(visualConnectors, {
+                    updateHistory: false,
+                });
+            },
+            updateVisualConnector: ({
+                undoData: { visualConnectorId, visualConnector },
+            }) => {
+                return updateVisualConnector(
+                    visualConnectorId,
+                    visualConnector,
+                    { updateHistory: false }
+                );
+            },
         }),
         [
             addTables,
@@ -378,6 +448,12 @@ export const HistoryProvider: React.FC<React.PropsWithChildren> = ({
             addNotes,
             removeNotes,
             updateNote,
+            addTexts,
+            removeTexts,
+            updateText,
+            addVisualConnectors,
+            removeVisualConnectors,
+            updateVisualConnector,
         ]
     );
 

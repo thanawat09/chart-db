@@ -256,6 +256,7 @@ export const ja: LanguageTranslation = {
                 tabs: {
                     areas: 'エリア',
                     notes: 'ノート',
+                    texts: 'Texts',
                 },
             },
 
@@ -278,6 +279,26 @@ export const ja: LanguageTranslation = {
                     },
                 },
             },
+
+            texts_section: {
+                filter: 'Filter',
+                add_text: 'Add Text',
+                no_results: 'No texts found',
+                clear: 'Clear Filter',
+                empty_state: {
+                    title: 'No Texts',
+                    description: 'Create a text label on the canvas',
+                },
+                text: {
+                    empty_text: 'Empty text',
+                    text_actions: {
+                        title: 'Text Actions',
+                        edit_content: 'Edit Content',
+                        delete_text: 'Delete Text',
+                    },
+                },
+            },
+
 
             custom_types_section: {
                 custom_types: 'カスタム型',
@@ -532,6 +553,7 @@ export const ja: LanguageTranslation = {
             new_relationship: '新しいリレーションシップ',
             new_area: '新しいエリア',
             new_note: '新しいメモ',
+            new_text: 'New Text',
         },
 
         table_node_context_menu: {

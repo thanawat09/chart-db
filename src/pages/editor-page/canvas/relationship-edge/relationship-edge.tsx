@@ -1,17 +1,18 @@
+import { useDiff } from '@/context/diff-context/use-diff';
+import { useCanvas } from '@/hooks/use-canvas';
+import { useChartDB } from '@/hooks/use-chartdb';
+import { useLocalConfig } from '@/hooks/use-local-config';
+import { useTheme } from '@/hooks/use-theme';
+import type { Cardinality, DBRelationship } from '@/lib/domain/db-relationship';
+import { cn } from '@/lib/utils';
+import type { Edge, EdgeProps } from '@xyflow/react';
+import { getBezierPath, Position, useReactFlow, useStore } from '@xyflow/react';
+import { EllipsisIcon } from 'lucide-react';
 import React, { useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import type { Edge, EdgeProps } from '@xyflow/react';
-import { getSmoothStepPath, Position, useReactFlow } from '@xyflow/react';
-import type { DBRelationship, Cardinality } from '@/lib/domain/db-relationship';
-import { RIGHT_HANDLE_ID_PREFIX } from '../table-node/table-node-field';
-import { useChartDB } from '@/hooks/use-chartdb';
-import { cn } from '@/lib/utils';
 import { getCardinalityMarkerId } from '../canvas-utils';
-import { useDiff } from '@/context/diff-context/use-diff';
-import { useLocalConfig } from '@/hooks/use-local-config';
-import { useCanvas } from '@/hooks/use-canvas';
+import { RIGHT_HANDLE_ID_PREFIX } from '../table-node/table-node-field';
 import { EditRelationshipPopover } from './edit-relationship-popover';
-import { EllipsisIcon } from 'lucide-react';
 
 export type RelationshipEdgeType = Edge<
     {
@@ -32,14 +33,16 @@ export const RelationshipEdge: React.FC<EdgeProps<RelationshipEdgeType>> =
             source,
             target,
             selected,
+            animated,
             data,
         }) => {
             const { getInternalNode, getEdge } = useReactFlow();
             const { checkIfRelationshipRemoved, checkIfNewRelationship } =
                 useDiff();
             const { showCardinality } = useLocalConfig();
+            const { effectiveTheme } = useTheme();
 
-            const { relationships, updateRelationship, removeRelationship } =
+            const { updateRelationship, removeRelationship, getTable } =
                 useChartDB();
             const {
                 editRelationshipPopover,
@@ -48,6 +51,70 @@ export const RelationshipEdge: React.FC<EdgeProps<RelationshipEdgeType>> =
             } = useCanvas();
 
             const relationship = data?.relationship;
+
+            // Prefer boolean selectors — array selectors re-create every time and can freeze the UI
+            const sourceTableSelected = useStore(
+                (state) =>
+                    !!state.nodes.find(
+                        (node) =>
+                            node.id === source &&
+                            node.type === 'table' &&
+                            node.selected &&
+                            !node.hidden
+                    )
+            );
+            const targetTableSelected = useStore(
+                (state) =>
+                    !!state.nodes.find(
+                        (node) =>
+                            node.id === target &&
+                            node.type === 'table' &&
+                            node.selected &&
+                            !node.hidden
+                    )
+            );
+
+            // Color the WHOLE edge by the field on the selected table:
+            // PK field on selected table → pink; FK field on selected table → blue
+            const selectedTableFieldIsPk = useMemo(() => {
+                if (!relationship) {
+                    return null;
+                }
+
+                const selectedId = sourceTableSelected
+                    ? source
+                    : targetTableSelected
+                      ? target
+                      : null;
+                if (!selectedId) {
+                    return null;
+                }
+                if (
+                    selectedId !== relationship.sourceTableId &&
+                    selectedId !== relationship.targetTableId
+                ) {
+                    return null;
+                }
+
+                const fieldId =
+                    selectedId === relationship.sourceTableId
+                        ? relationship.sourceFieldId
+                        : relationship.targetFieldId;
+                const table = getTable(selectedId);
+                const field = table?.fields.find((f) => f.id === fieldId);
+                if (!field) {
+                    return null;
+                }
+
+                return !!field.primaryKey;
+            }, [
+                getTable,
+                relationship,
+                source,
+                sourceTableSelected,
+                target,
+                targetTableSelected,
+            ]);
 
             const isPopoverOpen = useMemo(
                 () => editRelationshipPopover?.relationshipId === id,
@@ -197,22 +264,6 @@ export const RelationshipEdge: React.FC<EdgeProps<RelationshipEdgeType>> =
                 closeRelationshipPopover();
             }, [id, removeRelationship, closeRelationshipPopover]);
 
-            const edgeNumber = useMemo(() => {
-                let index = 0;
-                for (const rel of relationships) {
-                    if (
-                        (rel.targetTableId === target &&
-                            rel.sourceTableId === source) ||
-                        (rel.targetTableId === source &&
-                            rel.sourceTableId === target)
-                    ) {
-                        if (rel.id === id) return index;
-                        index++;
-                    }
-                }
-                return -1;
-            }, [relationships, id, source, target]);
-
             const sourceNode = useMemo(
                 () => getInternalNode(source),
                 [getInternalNode, source]
@@ -286,17 +337,15 @@ export const RelationshipEdge: React.FC<EdgeProps<RelationshipEdgeType>> =
                 const roundedSourceY = Math.round(sourceY);
                 const roundedTargetY = Math.round(targetY);
 
-                const [path] = getSmoothStepPath({
+                const [path] = getBezierPath({
                     sourceX: roundedSourceX,
                     sourceY: roundedSourceY,
                     targetX: roundedTargetX,
                     targetY: roundedTargetY,
-                    borderRadius: 14,
                     sourcePosition:
                         sourceSide === 'left' ? Position.Left : Position.Right,
                     targetPosition:
                         targetSide === 'left' ? Position.Left : Position.Right,
-                    offset: (edgeNumber + 1 + (showCardinality ? 1.5 : 0)) * 14,
                 });
                 return path;
             }, [
@@ -308,8 +357,6 @@ export const RelationshipEdge: React.FC<EdgeProps<RelationshipEdgeType>> =
                 targetY,
                 sourceSide,
                 targetSide,
-                edgeNumber,
-                showCardinality,
             ]);
 
             const sourceMarker = useMemo(
@@ -372,6 +419,35 @@ export const RelationshipEdge: React.FC<EdgeProps<RelationshipEdgeType>> =
                 targetY,
             ]);
 
+            const isAnimated =
+                !!animated || !!data?.highlighted || !!selected;
+
+            const edgeStroke = useMemo(() => {
+                if (isDiffNewRelationship) {
+                    return '#22c55e';
+                }
+                if (isDiffRelationshipRemoved) {
+                    return '#ef4444';
+                }
+
+                // Selected table: PK field → whole edge pink; FK field → whole edge blue
+                if (selectedTableFieldIsPk === true) {
+                    return '#db2777'; // pink-600
+                }
+                if (selectedTableFieldIsPk === false) {
+                    return effectiveTheme === 'dark' ? '#60a5fa' : '#2563eb'; // blue
+                }
+
+                // No relevant table selected — default slate
+                return isAnimated ? '#db2777' : '#94a3b8';
+            }, [
+                effectiveTheme,
+                isAnimated,
+                isDiffNewRelationship,
+                isDiffRelationshipRemoved,
+                selectedTableFieldIsPk,
+            ]);
+
             return (
                 <>
                     <path
@@ -380,14 +456,21 @@ export const RelationshipEdge: React.FC<EdgeProps<RelationshipEdgeType>> =
                         markerStart={`url(#${sourceMarker})`}
                         markerEnd={`url(#${targetMarker})`}
                         fill="none"
+                        style={{
+                            stroke: edgeStroke,
+                            strokeWidth:
+                                isDiffNewRelationship ||
+                                isDiffRelationshipRemoved
+                                    ? 3
+                                    : isAnimated
+                                      ? 2.5
+                                      : 2,
+                        }}
                         className={cn([
                             'react-flow__edge-path',
-                            `!stroke-2 ${selected ? '!stroke-pink-600' : '!stroke-slate-400'}`,
                             {
-                                '!stroke-green-500 !stroke-[3px]':
-                                    isDiffNewRelationship,
-                                '!stroke-red-500 !stroke-[3px]':
-                                    isDiffRelationshipRemoved,
+                                'chartdb-edge-dash-animated':
+                                    !!animated || !!data?.highlighted,
                             },
                         ])}
                         onClick={handleEdgeClick}

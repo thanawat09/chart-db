@@ -254,6 +254,7 @@ export const pt_BR: LanguageTranslation = {
                 tabs: {
                     areas: 'Áreas',
                     notes: 'Notas',
+                    texts: 'Texts',
                 },
             },
 
@@ -276,6 +277,26 @@ export const pt_BR: LanguageTranslation = {
                     },
                 },
             },
+
+            texts_section: {
+                filter: 'Filter',
+                add_text: 'Add Text',
+                no_results: 'No texts found',
+                clear: 'Clear Filter',
+                empty_state: {
+                    title: 'No Texts',
+                    description: 'Create a text label on the canvas',
+                },
+                text: {
+                    empty_text: 'Empty text',
+                    text_actions: {
+                        title: 'Text Actions',
+                        edit_content: 'Edit Content',
+                        delete_text: 'Delete Text',
+                    },
+                },
+            },
+
 
             custom_types_section: {
                 custom_types: 'Tipos Personalizados',
@@ -531,6 +552,7 @@ export const pt_BR: LanguageTranslation = {
             new_relationship: 'Novo Relacionamento',
             new_area: 'Nova Área',
             new_note: 'Nova Nota',
+            new_text: 'New Text',
         },
 
         table_node_context_menu: {

@@ -14,6 +14,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import { getIsOldSafari } from '@/safari-compat';
+import { VisualHandles } from '../visual-handles';
 
 export interface NoteNodeProps extends NodeProps {
     data: {
@@ -32,11 +33,13 @@ export const NoteNode: React.FC<NoteNodeProps> = ({
     const { updateNote, removeNote, readonly } = useChartDB();
     const [editMode, setEditMode] = useState(false);
     const [content, setContent] = useState(note.content);
+    const [hovered, setHovered] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const { events } = useCanvas();
     const { effectiveTheme } = useTheme();
 
     const focused = !!selected && !dragging;
+    const showHandles = (focused || hovered) && !readonly;
 
     const saveContent = useCallback(() => {
         if (!editMode) return;
@@ -149,7 +152,11 @@ export const NoteNode: React.FC<NoteNodeProps> = ({
                 background: getBodyColor(note.color),
             }}
             onDoubleClick={handleDoubleClick}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
         >
+            <VisualHandles visible={showHandles} isConnectable={!readonly} />
+
             {/* Notepad header with binding */}
             <div
                 className="relative flex h-2 shrink-0 items-center justify-center"

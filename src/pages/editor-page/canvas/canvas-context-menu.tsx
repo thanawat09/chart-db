@@ -8,29 +8,31 @@ import {
     ContextMenuSubTrigger,
     ContextMenuTrigger,
 } from '@/components/context-menu/context-menu';
+import { useAlert } from '@/context/alert-context/alert-context';
+import { useDiagramFilter } from '@/context/diagram-filter-context/use-diagram-filter';
 import { useBreakpoint } from '@/hooks/use-breakpoint';
+import { useCanvas } from '@/hooks/use-canvas';
 import { useChartDB } from '@/hooks/use-chartdb';
 import { useDialog } from '@/hooks/use-dialog';
+import { useLayout } from '@/hooks/use-layout';
+import { useLocalConfig } from '@/hooks/use-local-config';
+import { defaultSchemas } from '@/lib/data/default-schemas';
+import { arrangeTablesForArea } from '@/lib/utils/area-utils';
 import { useReactFlow, useStore } from '@xyflow/react';
-import React, { useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
-    Table,
-    Workflow,
     Group,
-    View,
-    StickyNote,
     Import,
     LayoutGrid,
     Plus,
     SquareArrowOutUpRight,
+    StickyNote,
+    Table,
+    Type,
+    View,
+    Workflow,
 } from 'lucide-react';
-import { useDiagramFilter } from '@/context/diagram-filter-context/use-diagram-filter';
-import { useLocalConfig } from '@/hooks/use-local-config';
-import { useCanvas } from '@/hooks/use-canvas';
-import { defaultSchemas } from '@/lib/data/default-schemas';
-import { useAlert } from '@/context/alert-context/alert-context';
-import { arrangeTablesForArea } from '@/lib/utils/area-utils';
+import React, { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export const CanvasContextMenu: React.FC<React.PropsWithChildren> = ({
     children,
@@ -41,6 +43,7 @@ export const CanvasContextMenu: React.FC<React.PropsWithChildren> = ({
         createArea,
         databaseType,
         createNote,
+        createText,
         areas,
         tables,
         relationships,
@@ -55,6 +58,12 @@ export const CanvasContextMenu: React.FC<React.PropsWithChildren> = ({
     const { showDBViews } = useLocalConfig();
     const { setEditTableModeTable, reorderTables } = useCanvas();
     const { showAlert } = useAlert();
+    const {
+        showSidePanel,
+        selectSidebarSection,
+        selectVisualsTab,
+        openTextFromSidebar,
+    } = useLayout();
 
     const { isMd: isDesktop } = useBreakpoint('md');
 
@@ -169,6 +178,32 @@ export const CanvasContextMenu: React.FC<React.PropsWithChildren> = ({
             });
         },
         [createNote, screenToFlowPosition]
+    );
+
+    const createTextHandler = useCallback(
+        async (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+            const position = screenToFlowPosition({
+                x: event.clientX,
+                y: event.clientY,
+            });
+
+            const text = await createText({
+                x: position.x,
+                y: position.y,
+            });
+            showSidePanel();
+            selectSidebarSection('visuals');
+            selectVisualsTab('texts');
+            openTextFromSidebar(text.id);
+        },
+        [
+            createText,
+            screenToFlowPosition,
+            showSidePanel,
+            selectSidebarSection,
+            selectVisualsTab,
+            openTextFromSidebar,
+        ]
     );
 
     const createRelationshipHandler = useCallback(() => {
@@ -332,6 +367,13 @@ export const CanvasContextMenu: React.FC<React.PropsWithChildren> = ({
                 >
                     {t('canvas_context_menu.new_note')}
                     <StickyNote className="size-3.5" />
+                </ContextMenuItem>
+                <ContextMenuItem
+                    onClick={createTextHandler}
+                    className="flex justify-between gap-4"
+                >
+                    {t('canvas_context_menu.new_text')}
+                    <Type className="size-3.5" />
                 </ContextMenuItem>
                 <ContextMenuSeparator />
                 <ContextMenuItem

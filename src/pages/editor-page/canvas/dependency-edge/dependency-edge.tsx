@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import type { Edge, EdgeProps } from '@xyflow/react';
-import { getSmoothStepPath, Position, useReactFlow } from '@xyflow/react';
-import { useChartDB } from '@/hooks/use-chartdb';
+import { getBezierPath, Position, useReactFlow } from '@xyflow/react';
 import { cn } from '@/lib/utils';
 import type { DBDependency } from '@/lib/domain/db-dependency';
 import { useLayout } from '@/hooks/use-layout';
@@ -26,27 +25,12 @@ export const DependencyEdge: React.FC<EdgeProps<DependencyEdgeType>> = ({
     // data,
 }) => {
     const { getInternalNode } = useReactFlow();
-    const { dependencies } = useChartDB();
     const { openDependencyFromSidebar, selectSidebarSection } = useLayout();
 
     const openDependencyInEditor = useCallback(() => {
         selectSidebarSection('refs');
         openDependencyFromSidebar(id);
     }, [id, openDependencyFromSidebar, selectSidebarSection]);
-
-    const edgeNumber = useMemo(
-        () =>
-            dependencies
-                .filter(
-                    (dep) =>
-                        (dep.tableId === target &&
-                            dep.dependentTableId === source) ||
-                        (dep.tableId === source &&
-                            dep.dependentTableId === target)
-                )
-                .findIndex((dep) => dep.id === id),
-        [dependencies, id, source, target]
-    );
 
     const sourceNode = getInternalNode(source);
     const targetNode = getInternalNode(target);
@@ -102,20 +86,17 @@ export const DependencyEdge: React.FC<EdgeProps<DependencyEdgeType>> = ({
 
     const [edgePath] = useMemo(
         () =>
-            getSmoothStepPath({
+            getBezierPath({
                 sourceX,
                 sourceY: sourceSide === 'top' ? sourceTopY : sourceBottomY,
                 targetX,
                 targetY: targetSide === 'top' ? targetTopY : targetBottomY,
-                borderRadius: 14,
                 sourcePosition:
                     sourceSide === 'top' ? Position.Top : Position.Bottom,
                 targetPosition:
                     targetSide === 'top' ? Position.Top : Position.Bottom,
-                offset: (edgeNumber + 1) * 14,
             }),
         [
-            edgeNumber,
             sourceBottomY,
             sourceSide,
             sourceTopY,

@@ -1,6 +1,7 @@
 import type { DBTable } from '@/lib/domain/db-table';
 import type { DBRelationship } from '@/lib/domain/db-relationship';
 import type { Area } from '@/lib/domain/area';
+import type { Text } from '@/lib/domain/text';
 import {
     adjustTablePositionsWithoutAreas,
     calcTableHeight,
@@ -89,6 +90,77 @@ export const getTablesInArea = (
     tables: DBTable[]
 ): DBTable[] => {
     return tables.filter((table) => table.parentAreaId === areaId);
+};
+
+/**
+ * Check if a text is completely inside an area
+ */
+export const isTextInsideArea = (text: Text, area: Area): boolean => {
+    const textLeft = text.x;
+    const textRight = text.x + text.width;
+    const textTop = text.y;
+    const textBottom = text.y + text.height;
+
+    const areaLeft = area.x;
+    const areaRight = area.x + area.width;
+    const areaTop = area.y;
+    const areaBottom = area.y + area.height;
+
+    return (
+        textLeft >= areaLeft &&
+        textRight <= areaRight &&
+        textTop >= areaTop &&
+        textBottom <= areaBottom
+    );
+};
+
+/**
+ * Find which area contains a text
+ */
+export const findContainingAreaForText = (
+    text: Text,
+    areas: Area[]
+): Area | null => {
+    const sortedAreas = [...areas].sort(
+        (a, b) => (b.order ?? 0) - (a.order ?? 0)
+    );
+
+    for (const area of sortedAreas) {
+        if (isTextInsideArea(text, area)) {
+            return area;
+        }
+    }
+
+    return null;
+};
+
+/**
+ * Update texts with their parent area IDs based on containment
+ */
+export const updateTextsParentAreas = (
+    texts: Text[],
+    areas: Area[]
+): Text[] => {
+    return texts.map((text) => {
+        const containingArea = findContainingAreaForText(text, areas);
+        const newParentAreaId = containingArea?.id || null;
+
+        if (text.parentAreaId !== newParentAreaId) {
+            return {
+                ...text,
+                parentAreaId: newParentAreaId,
+            };
+        }
+
+        return text;
+    });
+};
+
+/**
+ * Get all texts that are inside a specific area
+ */
+export const getTextsInArea = (areaId: string, texts: Text[]): Text[] => {
+    return texts.filter((text) => text.parentAreaId === areaId);
 };
 
 const AREA_PADDING = 30;

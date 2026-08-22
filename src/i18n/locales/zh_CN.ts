@@ -249,6 +249,7 @@ export const zh_CN: LanguageTranslation = {
                 tabs: {
                     areas: '区域',
                     notes: '笔记',
+                    texts: 'Texts',
                 },
             },
 
@@ -270,6 +271,26 @@ export const zh_CN: LanguageTranslation = {
                     },
                 },
             },
+
+            texts_section: {
+                filter: 'Filter',
+                add_text: 'Add Text',
+                no_results: 'No texts found',
+                clear: 'Clear Filter',
+                empty_state: {
+                    title: 'No Texts',
+                    description: 'Create a text label on the canvas',
+                },
+                text: {
+                    empty_text: 'Empty text',
+                    text_actions: {
+                        title: 'Text Actions',
+                        edit_content: 'Edit Content',
+                        delete_text: 'Delete Text',
+                    },
+                },
+            },
+
 
             custom_types_section: {
                 custom_types: '自定义类型',
@@ -518,6 +539,7 @@ export const zh_CN: LanguageTranslation = {
             new_relationship: '新建关系',
             new_area: '新建区域',
             new_note: '新笔记',
+            new_text: 'New Text',
         },
 
         table_node_context_menu: {

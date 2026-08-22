@@ -1,32 +1,32 @@
-import React, { Suspense, useEffect } from 'react';
-import { useChartDB } from '@/hooks/use-chartdb';
-import { useDialog } from '@/hooks/use-dialog';
+import { Spinner } from '@/components/spinner/spinner';
 import { Toaster } from '@/components/toast/toaster';
-import { useBreakpoint } from '@/hooks/use-breakpoint';
-import { useLocalConfig } from '@/hooks/use-local-config';
+import { AlertProvider } from '@/context/alert-context/alert-provider';
+import { CanvasProvider } from '@/context/canvas-context/canvas-provider';
+import { ChartDBProvider } from '@/context/chartdb-context/chartdb-provider';
+import { ConfigProvider } from '@/context/config-context/config-provider';
+import { DiagramFilterProvider } from '@/context/diagram-filter-context/diagram-filter-provider';
+import { DialogProvider } from '@/context/dialog-context/dialog-provider';
+import { DiffProvider } from '@/context/diff-context/diff-provider';
+import { ExportImageProvider } from '@/context/export-image-context/export-image-provider';
 import { FullScreenLoaderProvider } from '@/context/full-screen-spinner-context/full-screen-spinner-provider';
+import { HistoryProvider } from '@/context/history-context/history-provider';
+import { RedoUndoStackProvider } from '@/context/history-context/redo-undo-stack-provider';
+import { KeyboardShortcutsProvider } from '@/context/keyboard-shortcuts-context/keyboard-shortcuts-provider';
 import { LayoutProvider } from '@/context/layout-context/layout-provider';
 import { LocalConfigProvider } from '@/context/local-config-context/local-config-provider';
 import { StorageProvider } from '@/context/storage-context/storage-provider';
-import { ConfigProvider } from '@/context/config-context/config-provider';
-import { RedoUndoStackProvider } from '@/context/history-context/redo-undo-stack-provider';
-import { ChartDBProvider } from '@/context/chartdb-context/chartdb-provider';
-import { HistoryProvider } from '@/context/history-context/history-provider';
-import { ThemeProvider } from '@/context/theme-context/theme-provider';
-import { ReactFlowProvider } from '@xyflow/react';
-import { ExportImageProvider } from '@/context/export-image-context/export-image-provider';
-import { DialogProvider } from '@/context/dialog-context/dialog-provider';
-import { KeyboardShortcutsProvider } from '@/context/keyboard-shortcuts-context/keyboard-shortcuts-provider';
-import { Spinner } from '@/components/spinner/spinner';
-import { Helmet } from 'react-helmet-async';
-import { AlertProvider } from '@/context/alert-context/alert-provider';
-import { CanvasProvider } from '@/context/canvas-context/canvas-provider';
-import { HIDE_CHARTDB_CLOUD } from '@/lib/env';
-import { useDiagramLoader } from './use-diagram-loader';
-import { DiffProvider } from '@/context/diff-context/diff-provider';
-import { TopNavbarMock } from './top-navbar/top-navbar-mock';
-import { DiagramFilterProvider } from '@/context/diagram-filter-context/diagram-filter-provider';
 import { SyncProvider } from '@/context/sync-context/sync-provider';
+import { ThemeProvider } from '@/context/theme-context/theme-provider';
+import { useBreakpoint } from '@/hooks/use-breakpoint';
+import { useChartDB } from '@/hooks/use-chartdb';
+import { useDialog } from '@/hooks/use-dialog';
+import { useLocalConfig } from '@/hooks/use-local-config';
+import { HIDE_CHARTDB_CLOUD } from '@/lib/env';
+import { ReactFlowProvider } from '@xyflow/react';
+import React, { Suspense, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { TopNavbarMock } from './top-navbar/top-navbar-mock';
+import { useDiagramLoader } from './use-diagram-loader';
 
 const OPEN_STAR_US_AFTER_SECONDS = 30;
 const SHOW_STAR_US_AGAIN_AFTER_DAYS = 1;
@@ -82,18 +82,18 @@ const EditorPageComponent: React.FC = () => {
                 </title>
             </Helmet>
             <section
-                className={`bg-background ${isDesktop ? 'h-screen w-screen' : 'h-dvh w-dvw'} flex select-none flex-col overflow-x-hidden`}
+                className={`bg-background ${isDesktop ? 'h-dvh w-screen' : 'h-dvh w-dvw'} flex select-none flex-col overflow-hidden`}
             >
                 <Suspense
                     fallback={
-                        <>
+                        <div className="flex size-full min-h-0 flex-col overflow-hidden">
                             <TopNavbarMock />
                             <div className="flex flex-1 items-center justify-center">
                                 <Spinner
                                     size={isDesktop ? 'large' : 'medium'}
                                 />
                             </div>
-                        </>
+                        </div>
                     }
                 >
                     {isDesktop ? (

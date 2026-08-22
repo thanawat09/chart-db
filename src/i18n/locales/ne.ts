@@ -253,6 +253,7 @@ export const ne: LanguageTranslation = {
                 tabs: {
                     areas: 'क्षेत्रहरू',
                     notes: 'टिप्पणीहरू',
+                    texts: 'Texts',
                 },
             },
 
@@ -275,6 +276,26 @@ export const ne: LanguageTranslation = {
                     },
                 },
             },
+
+            texts_section: {
+                filter: 'Filter',
+                add_text: 'Add Text',
+                no_results: 'No texts found',
+                clear: 'Clear Filter',
+                empty_state: {
+                    title: 'No Texts',
+                    description: 'Create a text label on the canvas',
+                },
+                text: {
+                    empty_text: 'Empty text',
+                    text_actions: {
+                        title: 'Text Actions',
+                        edit_content: 'Edit Content',
+                        delete_text: 'Delete Text',
+                    },
+                },
+            },
+
 
             custom_types_section: {
                 custom_types: 'कस्टम प्रकारहरू',
@@ -532,6 +553,7 @@ export const ne: LanguageTranslation = {
             // TODO: Translate
             new_area: 'नयाँ क्षेत्र',
             new_note: 'नयाँ नोट',
+            new_text: 'New Text',
         },
 
         table_node_context_menu: {

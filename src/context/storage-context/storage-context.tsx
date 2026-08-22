@@ -9,6 +9,8 @@ import type { Area } from '@/lib/domain/area';
 import type { DBCustomType } from '@/lib/domain/db-custom-type';
 import type { DiagramFilter } from '@/lib/domain/diagram-filter/diagram-filter';
 import type { Note } from '@/lib/domain/note';
+import type { Text } from '@/lib/domain/text';
+import type { VisualConnector } from '@/lib/domain/visual-connector';
 import type { SyncMetadata } from '@/lib/sync/sync-types';
 
 export interface StorageContext {
@@ -33,6 +35,8 @@ export interface StorageContext {
         includeAreas?: boolean;
         includeCustomTypes?: boolean;
         includeNotes?: boolean;
+        includeTexts?: boolean;
+        includeVisualConnectors?: boolean;
     }) => Promise<Diagram[]>;
     getDiagram: (
         id: string,
@@ -43,6 +47,8 @@ export interface StorageContext {
             includeAreas?: boolean;
             includeCustomTypes?: boolean;
             includeNotes?: boolean;
+            includeTexts?: boolean;
+            includeVisualConnectors?: boolean;
         }
     ) => Promise<Diagram | undefined>;
     updateDiagram: (params: {
@@ -163,6 +169,40 @@ export interface StorageContext {
     deleteNote: (params: { diagramId: string; id: string }) => Promise<void>;
     listNotes: (diagramId: string) => Promise<Note[]>;
     deleteDiagramNotes: (diagramId: string) => Promise<void>;
+
+    // Text operations
+    addText: (params: { diagramId: string; text: Text }) => Promise<void>;
+    getText: (params: {
+        diagramId: string;
+        id: string;
+    }) => Promise<Text | undefined>;
+    updateText: (params: {
+        id: string;
+        attributes: Partial<Text>;
+    }) => Promise<void>;
+    deleteText: (params: { diagramId: string; id: string }) => Promise<void>;
+    listTexts: (diagramId: string) => Promise<Text[]>;
+    deleteDiagramTexts: (diagramId: string) => Promise<void>;
+
+    // Visual connector operations
+    addVisualConnector: (params: {
+        diagramId: string;
+        visualConnector: VisualConnector;
+    }) => Promise<void>;
+    getVisualConnector: (params: {
+        diagramId: string;
+        id: string;
+    }) => Promise<VisualConnector | undefined>;
+    updateVisualConnector: (params: {
+        id: string;
+        attributes: Partial<VisualConnector>;
+    }) => Promise<void>;
+    deleteVisualConnector: (params: {
+        diagramId: string;
+        id: string;
+    }) => Promise<void>;
+    listVisualConnectors: (diagramId: string) => Promise<VisualConnector[]>;
+    deleteDiagramVisualConnectors: (diagramId: string) => Promise<void>;
 }
 
 export const storageInitialValue: StorageContext = {
@@ -226,6 +266,22 @@ export const storageInitialValue: StorageContext = {
     deleteNote: emptyFn,
     listNotes: emptyFn,
     deleteDiagramNotes: emptyFn,
+
+    // Text operations
+    addText: emptyFn,
+    getText: emptyFn,
+    updateText: emptyFn,
+    deleteText: emptyFn,
+    listTexts: emptyFn,
+    deleteDiagramTexts: emptyFn,
+
+    // Visual connector operations
+    addVisualConnector: emptyFn,
+    getVisualConnector: emptyFn,
+    updateVisualConnector: emptyFn,
+    deleteVisualConnector: emptyFn,
+    listVisualConnectors: emptyFn,
+    deleteDiagramVisualConnectors: emptyFn,
 };
 
 export const storageContext =

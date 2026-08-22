@@ -12,6 +12,10 @@ import type { DBCustomType } from './db-custom-type';
 import { dbCustomTypeSchema } from './db-custom-type';
 import type { Note } from './note';
 import { noteSchema } from './note';
+import type { Text } from './text';
+import { textSchema } from './text';
+import type { VisualConnector } from './visual-connector';
+import { visualConnectorSchema } from './visual-connector';
 
 export interface Diagram {
     id: string;
@@ -24,6 +28,8 @@ export interface Diagram {
     areas?: Area[];
     customTypes?: DBCustomType[];
     notes?: Note[];
+    texts?: Text[];
+    visualConnectors?: VisualConnector[];
     createdAt: Date;
     updatedAt: Date;
 }
@@ -39,6 +45,8 @@ export const diagramSchema: z.ZodType<Diagram> = z.object({
     areas: z.array(areaSchema).optional(),
     customTypes: z.array(dbCustomTypeSchema).optional(),
     notes: z.array(noteSchema).optional(),
+    texts: z.array(textSchema).optional(),
+    visualConnectors: z.array(visualConnectorSchema).optional(),
     createdAt: z.date(),
     updatedAt: z.date(),
 });

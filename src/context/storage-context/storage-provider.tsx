@@ -12,6 +12,8 @@ import type { Area } from '@/lib/domain/area';
 import type { DBCustomType } from '@/lib/domain/db-custom-type';
 import type { DiagramFilter } from '@/lib/domain/diagram-filter/diagram-filter';
 import type { Note } from '@/lib/domain/note';
+import type { Text } from '@/lib/domain/text';
+import type { VisualConnector } from '@/lib/domain/visual-connector';
 import type { SyncMetadata } from '@/lib/sync/sync-types';
 
 export const StorageProvider: React.FC<React.PropsWithChildren> = ({
@@ -46,6 +48,14 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
             notes: EntityTable<
                 Note & { diagramId: string },
                 'id' // primary key "id" (for the typings only)
+            >;
+            texts: EntityTable<
+                Text & { diagramId: string },
+                'id'
+            >;
+            visual_connectors: EntityTable<
+                VisualConnector & { diagramId: string },
+                'id'
             >;
             config: EntityTable<
                 ChartDBConfig & { id: number },
@@ -256,6 +266,27 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
             diagram_filters: 'diagramId, tableIds, schemasIds',
             notes: '++id, diagramId, content, x, y, width, height, color',
             sync_metadata: 'id',
+        });
+
+        dexieDB.version(15).stores({
+            diagrams:
+                '++id, name, databaseType, databaseEdition, createdAt, updatedAt',
+            db_tables:
+                '++id, diagramId, name, schema, x, y, fields, indexes, color, createdAt, width, comment, isView, isMaterializedView, order',
+            db_relationships:
+                '++id, diagramId, name, sourceSchema, sourceTableId, targetSchema, targetTableId, sourceFieldId, targetFieldId, type, createdAt',
+            db_dependencies:
+                '++id, diagramId, schema, tableId, dependentSchema, dependentTableId, createdAt',
+            areas: '++id, diagramId, name, x, y, width, height, color',
+            db_custom_types:
+                '++id, diagramId, schema, type, kind, values, fields',
+            config: '++id, defaultDiagramId',
+            diagram_filters: 'diagramId, tableIds, schemasIds',
+            notes: '++id, diagramId, content, x, y, width, height, color',
+            sync_metadata: 'id',
+            texts: '++id, diagramId, content, x, y, width, height, textColor, fontSize, textAlign, parentAreaId, order',
+            visual_connectors:
+                '++id, diagramId, sourceType, sourceId, targetType, targetId, sourceHandle, targetHandle',
         });
 
         dexieDB.on('ready', async () => {
@@ -655,6 +686,114 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
             [db]
         );
 
+    // Text operations
+    const addText: StorageContext['addText'] = useCallback(
+        async ({ text, diagramId }) => {
+            await db.texts.add({
+                ...text,
+                diagramId,
+            });
+        },
+        [db]
+    );
+
+    const getText: StorageContext['getText'] = useCallback(
+        async ({ diagramId, id }) => {
+            return await db.texts.get({ id, diagramId });
+        },
+        [db]
+    );
+
+    const updateText: StorageContext['updateText'] = useCallback(
+        async ({ id, attributes }) => {
+            await db.texts.update(id, attributes);
+        },
+        [db]
+    );
+
+    const deleteText: StorageContext['deleteText'] = useCallback(
+        async ({ diagramId, id }) => {
+            await db.texts.where({ id, diagramId }).delete();
+        },
+        [db]
+    );
+
+    const listTexts: StorageContext['listTexts'] = useCallback(
+        async (diagramId) => {
+            return await db.texts
+                .where('diagramId')
+                .equals(diagramId)
+                .toArray();
+        },
+        [db]
+    );
+
+    const deleteDiagramTexts: StorageContext['deleteDiagramTexts'] =
+        useCallback(
+            async (diagramId) => {
+                await db.texts.where('diagramId').equals(diagramId).delete();
+            },
+            [db]
+        );
+
+    // Visual connector operations
+    const addVisualConnector: StorageContext['addVisualConnector'] =
+        useCallback(
+            async ({ visualConnector, diagramId }) => {
+                await db.visual_connectors.add({
+                    ...visualConnector,
+                    diagramId,
+                });
+            },
+            [db]
+        );
+
+    const getVisualConnector: StorageContext['getVisualConnector'] =
+        useCallback(
+            async ({ diagramId, id }) => {
+                return await db.visual_connectors.get({ id, diagramId });
+            },
+            [db]
+        );
+
+    const updateVisualConnector: StorageContext['updateVisualConnector'] =
+        useCallback(
+            async ({ id, attributes }) => {
+                await db.visual_connectors.update(id, attributes);
+            },
+            [db]
+        );
+
+    const deleteVisualConnector: StorageContext['deleteVisualConnector'] =
+        useCallback(
+            async ({ diagramId, id }) => {
+                await db.visual_connectors.where({ id, diagramId }).delete();
+            },
+            [db]
+        );
+
+    const listVisualConnectors: StorageContext['listVisualConnectors'] =
+        useCallback(
+            async (diagramId) => {
+                return await db.visual_connectors
+                    .where('diagramId')
+                    .equals(diagramId)
+                    .toArray();
+            },
+            [db]
+        );
+
+    const deleteDiagramVisualConnectors: StorageContext['deleteDiagramVisualConnectors'] =
+        useCallback(
+            async (diagramId) => {
+                await db.visual_connectors
+                    .where('diagramId')
+                    .equals(diagramId)
+                    .delete();
+            },
+            [db]
+        );
+
     const addDiagram: StorageContext['addDiagram'] = useCallback(
         async ({ diagram }) => {
             const promises = [];
@@ -707,6 +846,21 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
                 ...notes.map((note) => addNote({ diagramId: diagram.id, note }))
             );
 
+            const texts = diagram.texts ?? [];
+            promises.push(
+                ...texts.map((text) => addText({ diagramId: diagram.id, text }))
+            );
+
+            const visualConnectors = diagram.visualConnectors ?? [];
+            promises.push(
+                ...visualConnectors.map((visualConnector) =>
+                    addVisualConnector({
+                        diagramId: diagram.id,
+                        visualConnector,
+                    })
+                )
+            );
+
             await Promise.all(promises);
         },
         [
@@ -717,6 +871,8 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
             addRelationship,
             addTable,
             addNote,
+            addText,
+            addVisualConnector,
         ]
     );
 
@@ -729,6 +885,8 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
                 includeAreas: false,
                 includeCustomTypes: false,
                 includeNotes: false,
+                includeTexts: false,
+                includeVisualConnectors: false,
             }
         ): Promise<Diagram[]> => {
             let diagrams = await db.diagrams.toArray();
@@ -791,6 +949,26 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
                 );
             }
 
+            if (options.includeTexts) {
+                diagrams = await Promise.all(
+                    diagrams.map(async (diagram) => {
+                        diagram.texts = await listTexts(diagram.id);
+                        return diagram;
+                    })
+                );
+            }
+
+            if (options.includeVisualConnectors) {
+                diagrams = await Promise.all(
+                    diagrams.map(async (diagram) => {
+                        diagram.visualConnectors = await listVisualConnectors(
+                            diagram.id
+                        );
+                        return diagram;
+                    })
+                );
+            }
+
             return diagrams;
         },
         [
@@ -801,6 +979,8 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
             listRelationships,
             listTables,
             listNotes,
+            listTexts,
+            listVisualConnectors,
         ]
     );
 
@@ -814,6 +994,8 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
                 includeAreas: false,
                 includeCustomTypes: false,
                 includeNotes: false,
+                includeTexts: false,
+                includeVisualConnectors: false,
             }
         ): Promise<Diagram | undefined> => {
             const diagram = await db.diagrams.get(id);
@@ -846,6 +1028,14 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
                 diagram.notes = await listNotes(id);
             }
 
+            if (options.includeTexts) {
+                diagram.texts = await listTexts(id);
+            }
+
+            if (options.includeVisualConnectors) {
+                diagram.visualConnectors = await listVisualConnectors(id);
+            }
+
             return diagram;
         },
         [
@@ -856,6 +1046,8 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
             listRelationships,
             listTables,
             listNotes,
+            listTexts,
+            listVisualConnectors,
         ]
     );
 
@@ -887,6 +1079,12 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
                     db.notes.where('diagramId').equals(id).modify({
                         diagramId: attributes.id,
                     }),
+                    db.texts.where('diagramId').equals(id).modify({
+                        diagramId: attributes.id,
+                    }),
+                    db.visual_connectors.where('diagramId').equals(id).modify({
+                        diagramId: attributes.id,
+                    }),
                 ]);
             }
         },
@@ -903,6 +1101,8 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
                 db.areas.where('diagramId').equals(id).delete(),
                 db.db_custom_types.where('diagramId').equals(id).delete(),
                 db.notes.where('diagramId').equals(id).delete(),
+                db.texts.where('diagramId').equals(id).delete(),
+                db.visual_connectors.where('diagramId').equals(id).delete(),
             ]);
         },
         [db]
@@ -926,6 +1126,8 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
                         db.areas,
                         db.db_custom_types,
                         db.notes,
+                        db.texts,
+                        db.visual_connectors,
                         db.config,
                         db.diagram_filters,
                         db.sync_metadata,
@@ -957,6 +1159,14 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
                                     .equals(diagramId)
                                     .delete(),
                                 db.notes
+                                    .where('diagramId')
+                                    .equals(diagramId)
+                                    .delete(),
+                                db.texts
+                                    .where('diagramId')
+                                    .equals(diagramId)
+                                    .delete(),
+                                db.visual_connectors
                                     .where('diagramId')
                                     .equals(diagramId)
                                     .delete(),
@@ -1020,6 +1230,20 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
                                         ...note,
                                         diagramId: diagram.id,
                                     }))
+                                ),
+                                db.texts.bulkPut(
+                                    (diagram.texts ?? []).map((text) => ({
+                                        ...text,
+                                        diagramId: diagram.id,
+                                    }))
+                                ),
+                                db.visual_connectors.bulkPut(
+                                    (diagram.visualConnectors ?? []).map(
+                                        (visualConnector) => ({
+                                            ...visualConnector,
+                                            diagramId: diagram.id,
+                                        })
+                                    )
                                 ),
                             ]);
                         }
@@ -1085,6 +1309,18 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
                 deleteNote,
                 listNotes,
                 deleteDiagramNotes,
+                addText,
+                getText,
+                updateText,
+                deleteText,
+                listTexts,
+                deleteDiagramTexts,
+                addVisualConnector,
+                getVisualConnector,
+                updateVisualConnector,
+                deleteVisualConnector,
+                listVisualConnectors,
+                deleteDiagramVisualConnectors,
                 getDiagramFilter,
                 updateDiagramFilter,
                 deleteDiagramFilter,

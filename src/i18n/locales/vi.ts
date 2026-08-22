@@ -252,6 +252,7 @@ export const vi: LanguageTranslation = {
                 tabs: {
                     areas: 'Khu vực',
                     notes: 'Ghi chú',
+                    texts: 'Texts',
                 },
             },
 
@@ -274,6 +275,26 @@ export const vi: LanguageTranslation = {
                     },
                 },
             },
+
+            texts_section: {
+                filter: 'Filter',
+                add_text: 'Add Text',
+                no_results: 'No texts found',
+                clear: 'Clear Filter',
+                empty_state: {
+                    title: 'No Texts',
+                    description: 'Create a text label on the canvas',
+                },
+                text: {
+                    empty_text: 'Empty text',
+                    text_actions: {
+                        title: 'Text Actions',
+                        edit_content: 'Edit Content',
+                        delete_text: 'Delete Text',
+                    },
+                },
+            },
+
 
             custom_types_section: {
                 custom_types: 'Loại Tùy Chỉnh',
@@ -527,6 +548,7 @@ export const vi: LanguageTranslation = {
             // TODO: Translate
             new_area: 'Khu vực mới',
             new_note: 'Ghi Chú Mới',
+            new_text: 'New Text',
         },
 
         table_node_context_menu: {

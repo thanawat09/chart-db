@@ -21,6 +21,9 @@ export const LayoutProvider: React.FC<React.PropsWithChildren> = ({
     const [openedNoteInSidebar, setOpenedNoteInSidebar] = React.useState<
         string | undefined
     >();
+    const [openedTextInSidebar, setOpenedTextInSidebar] = React.useState<
+        string | undefined
+    >();
     const [openedCustomTypeInSidebar, setOpenedCustomTypeInSidebar] =
         React.useState<string | undefined>();
     const [selectedSidebarSection, setSelectedSidebarSection] =
@@ -47,6 +50,9 @@ export const LayoutProvider: React.FC<React.PropsWithChildren> = ({
 
     const closeAllNotesInSidebar: LayoutContext['closeAllNotesInSidebar'] =
         () => setOpenedNoteInSidebar('');
+
+    const closeAllTextsInSidebar: LayoutContext['closeAllTextsInSidebar'] =
+        () => setOpenedTextInSidebar('');
 
     const closeAllCustomTypesInSidebar: LayoutContext['closeAllCustomTypesInSidebar'] =
         () => setOpenedCustomTypeInSidebar('');
@@ -107,6 +113,15 @@ export const LayoutProvider: React.FC<React.PropsWithChildren> = ({
         setOpenedNoteInSidebar(noteId);
     };
 
+    const openTextFromSidebar: LayoutContext['openTextFromSidebar'] = (
+        textId
+    ) => {
+        showSidePanel();
+        setSelectedSidebarSection('visuals');
+        setSelectedVisualsTab('texts');
+        setOpenedTextInSidebar(textId);
+    };
+
     const openCustomTypeFromSidebar: LayoutContext['openCustomTypeFromSidebar'] =
         (customTypeId) => {
             showSidePanel();
@@ -139,6 +154,9 @@ export const LayoutProvider: React.FC<React.PropsWithChildren> = ({
                 openedNoteInSidebar,
                 openNoteFromSidebar,
                 closeAllNotesInSidebar,
+                openedTextInSidebar,
+                openTextFromSidebar,
+                closeAllTextsInSidebar,
                 openedCustomTypeInSidebar,
                 openCustomTypeFromSidebar,
                 closeAllCustomTypesInSidebar,

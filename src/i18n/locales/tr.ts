@@ -253,6 +253,7 @@ export const tr: LanguageTranslation = {
                 tabs: {
                     areas: 'Alanlar',
                     notes: 'Notlar',
+                    texts: 'Texts',
                 },
             },
 
@@ -275,6 +276,26 @@ export const tr: LanguageTranslation = {
                     },
                 },
             },
+
+            texts_section: {
+                filter: 'Filter',
+                add_text: 'Add Text',
+                no_results: 'No texts found',
+                clear: 'Clear Filter',
+                empty_state: {
+                    title: 'No Texts',
+                    description: 'Create a text label on the canvas',
+                },
+                text: {
+                    empty_text: 'Empty text',
+                    text_actions: {
+                        title: 'Text Actions',
+                        edit_content: 'Edit Content',
+                        delete_text: 'Delete Text',
+                    },
+                },
+            },
+
 
             custom_types_section: {
                 custom_types: 'Özel Tipler',
@@ -518,6 +539,7 @@ export const tr: LanguageTranslation = {
             // TODO: Translate
             new_area: 'Yeni Alan',
             new_note: 'Yeni Not',
+            new_text: 'New Text',
         },
         table_node_context_menu: {
             edit_table: 'Tabloyu Düzenle',

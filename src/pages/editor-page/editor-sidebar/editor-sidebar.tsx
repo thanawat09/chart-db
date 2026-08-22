@@ -186,7 +186,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = () => {
             side="left"
             collapsible="icon-extended"
             variant="sidebar"
-            className="relative h-full"
+            className="!relative inset-auto top-auto bottom-auto left-auto h-full"
         >
             {!isDesktop ? (
                 <SidebarHeader>

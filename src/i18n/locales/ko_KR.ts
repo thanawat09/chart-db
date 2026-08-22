@@ -252,6 +252,7 @@ export const ko_KR: LanguageTranslation = {
                 tabs: {
                     areas: '영역',
                     notes: '메모',
+                    texts: 'Texts',
                 },
             },
 
@@ -274,6 +275,26 @@ export const ko_KR: LanguageTranslation = {
                     },
                 },
             },
+
+            texts_section: {
+                filter: 'Filter',
+                add_text: 'Add Text',
+                no_results: 'No texts found',
+                clear: 'Clear Filter',
+                empty_state: {
+                    title: 'No Texts',
+                    description: 'Create a text label on the canvas',
+                },
+                text: {
+                    empty_text: 'Empty text',
+                    text_actions: {
+                        title: 'Text Actions',
+                        edit_content: 'Edit Content',
+                        delete_text: 'Delete Text',
+                    },
+                },
+            },
+
 
             custom_types_section: {
                 custom_types: '사용자 정의 타입',
@@ -525,6 +546,7 @@ export const ko_KR: LanguageTranslation = {
             new_relationship: '새 연관관계',
             new_area: '새 영역',
             new_note: '새 메모',
+            new_text: 'New Text',
         },
 
         table_node_context_menu: {

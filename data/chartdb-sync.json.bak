@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
-  "workspaceRevision": 340,
-  "updatedAt": "2026-08-22T08:43:19.479Z",
+  "workspaceRevision": 388,
+  "updatedAt": "2026-08-22T10:18:05.538Z",
   "config": {
     "revision": 11,
     "defaultDiagramId": "lhnima1maasp"
   },
   "diagrams": {
     "lhnima1maasp": {
-      "revision": 274,
-      "updatedAt": "2026-08-22T08:43:19.479Z",
-      "hash": "sha256:b4128a7e3c9026dcf21027f6edd067b8d050905bae1db8d9d9f220e6d173883e",
+      "revision": 321,
+      "updatedAt": "2026-08-22T10:18:05.538Z",
+      "hash": "sha256:8358e9ecc7c5f2cff80d0139c5eaaae429bd663ac3de9722b36be856805513c9",
       "data": {
         "id": "lhnima1maasp",
         "name": "i clean",
         "databaseType": "postgresql",
         "createdAt": "2026-07-29T12:47:31.129Z",
-        "updatedAt": "2026-08-22T08:43:14.626Z",
+        "updatedAt": "2026-08-22T10:17:57.502Z",
         "tables": [
           {
             "id": "0tju7206xn5mku6bk6pslvxqz",
@@ -1180,12 +1180,10 @@
             "color": "#8eb7ff",
             "isView": false,
             "createdAt": 1785307709398,
-            "width": 418,
-            "comments": "ข้อมูลแผนการให้บริการ",
+            "width": 333,
             "order": 2,
             "parentAreaId": "iygp8o3eb6eggqr3vxhk6t5kb",
-            "diagramId": "lhnima1maasp",
-            "expanded": false
+            "diagramId": "lhnima1maasp"
           },
           {
             "id": "3cb9c5za5igtjk0chpssq4gus",
@@ -9544,13 +9542,15 @@
             "color": "#ffe374",
             "diagramId": "lhnima1maasp"
           }
-        ]
+        ],
+        "texts": [],
+        "visualConnectors": []
       }
     },
     "yrm0m43pvitr": {
-      "revision": 44,
-      "updatedAt": "2026-08-06T06:54:48.436Z",
-      "hash": "sha256:169689dd7e66884753d2e873c4183ffd2faeccdd048d0204c1fff1fb759fa309",
+      "revision": 45,
+      "updatedAt": "2026-08-22T09:17:09.492Z",
+      "hash": "sha256:01d005773a2f62bc52d7f6d94af59c1de1e0517edd1fe55ce8ae2505ac1c645f",
       "data": {
         "id": "yrm0m43pvitr",
         "name": "evaluation",
@@ -12911,13 +12911,15 @@
             "color": "#ffe374",
             "diagramId": "yrm0m43pvitr"
           }
-        ]
+        ],
+        "texts": [],
+        "visualConnectors": []
       }
     },
     "hw7kswwv1smlouesd5bj5ex5j": {
-      "revision": 1,
-      "updatedAt": "2026-08-22T08:04:43.643Z",
-      "hash": "sha256:8aeeea23b2ba6ea7c7f4e1d63cb6e2f4cb1d54f63d3277c1e2538e0886fd4d62",
+      "revision": 2,
+      "updatedAt": "2026-08-22T09:17:09.492Z",
+      "hash": "sha256:fe16044dc12d5aba96c7d379a02b34f03105067aa781a2e402ae17c7383791dd",
       "data": {
         "id": "hw7kswwv1smlouesd5bj5ex5j",
         "name": "i clean (conflict copy 8/22/2026, 3:04:42 PM)",
@@ -22448,7 +22450,9 @@
             "color": "#ffe374",
             "diagramId": "hw7kswwv1smlouesd5bj5ex5j"
           }
-        ]
+        ],
+        "texts": [],
+        "visualConnectors": []
       }
     }
   },

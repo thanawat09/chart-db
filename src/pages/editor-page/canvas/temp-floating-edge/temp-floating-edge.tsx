@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Edge, EdgeProps } from '@xyflow/react';
-import { getSmoothStepPath, Position } from '@xyflow/react';
+import { getBezierPath, Position } from '@xyflow/react';
 
 export const TEMP_FLOATING_EDGE_ID = '__temp_floating_edge__';
 
@@ -22,14 +22,13 @@ export const TempFloatingEdge: React.FC<EdgeProps<TempFloatingEdgeType>> =
             sourcePosition = Position.Right,
             targetPosition = Position.Left,
         }) => {
-            const [edgePath] = getSmoothStepPath({
+            const [edgePath] = getBezierPath({
                 sourceX,
                 sourceY,
                 sourcePosition,
                 targetX,
                 targetY,
                 targetPosition,
-                borderRadius: 14,
             });
 
             return (

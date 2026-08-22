@@ -321,7 +321,13 @@ export const TableNodeField: React.FC<TableNodeFieldProps> = React.memo(
                     'transition-all duration-200 ease-in-out',
                     {
                         'bg-pink-100 dark:bg-pink-900':
-                            highlighted && !isCustomTypeHighlighted,
+                            highlighted &&
+                            !isCustomTypeHighlighted &&
+                            !isForeignKey,
+                        'bg-blue-100 dark:bg-blue-900/60':
+                            highlighted &&
+                            !isCustomTypeHighlighted &&
+                            isForeignKey,
                         'bg-yellow-100 dark:bg-yellow-900':
                             isCustomTypeHighlighted,
                         'max-h-8 opacity-100': visible,

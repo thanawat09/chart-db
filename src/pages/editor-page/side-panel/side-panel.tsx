@@ -51,9 +51,6 @@ export const SidePanel: React.FC<SidePanelProps> = () => {
                                 <SelectItem value="refs">
                                     {t('side_panel.refs_section.refs')}
                                 </SelectItem>
-                                <SelectItem value="areas">
-                                    {t('side_panel.areas_section.areas')}
-                                </SelectItem>
                                 <SelectItem value="visuals">
                                     {t('side_panel.visuals_section.visuals')}
                                 </SelectItem>

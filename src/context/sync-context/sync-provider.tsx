@@ -45,6 +45,8 @@ const fullDiagramOptions = {
     includeAreas: true,
     includeCustomTypes: true,
     includeNotes: true,
+    includeTexts: true,
+    includeVisualConnectors: true,
 };
 
 type SyncResult = 'ready' | 'initial-conflict' | 'failed';

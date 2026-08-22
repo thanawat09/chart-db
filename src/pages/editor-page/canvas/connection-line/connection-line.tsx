@@ -1,19 +1,18 @@
 import React from 'react';
 import type { ConnectionLineComponentProps } from '@xyflow/react';
-import { getSmoothStepPath, Position } from '@xyflow/react';
+import { getBezierPath, Position } from '@xyflow/react';
 import type { NodeType } from '../canvas';
 
 export const ConnectionLine: React.FC<
     ConnectionLineComponentProps<NodeType>
 > = ({ fromX, fromY, toX, toY, fromPosition, toPosition }) => {
-    const [edgePath] = getSmoothStepPath({
+    const [edgePath] = getBezierPath({
         sourceX: fromX,
         sourceY: fromY,
         sourcePosition: fromPosition ?? Position.Right,
         targetX: toX,
         targetY: toY,
         targetPosition: toPosition ?? Position.Left,
-        borderRadius: 14,
     });
 
     return (

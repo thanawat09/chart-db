@@ -251,6 +251,7 @@ export const ru: LanguageTranslation = {
                 tabs: {
                     areas: 'Области',
                     notes: 'Заметки',
+                    texts: 'Texts',
                 },
             },
 
@@ -273,6 +274,26 @@ export const ru: LanguageTranslation = {
                     },
                 },
             },
+
+            texts_section: {
+                filter: 'Filter',
+                add_text: 'Add Text',
+                no_results: 'No texts found',
+                clear: 'Clear Filter',
+                empty_state: {
+                    title: 'No Texts',
+                    description: 'Create a text label on the canvas',
+                },
+                text: {
+                    empty_text: 'Empty text',
+                    text_actions: {
+                        title: 'Text Actions',
+                        edit_content: 'Edit Content',
+                        delete_text: 'Delete Text',
+                    },
+                },
+            },
+
 
             custom_types_section: {
                 custom_types: 'Пользовательские типы',
@@ -527,6 +548,7 @@ export const ru: LanguageTranslation = {
             new_relationship: 'Создать отношение',
             new_area: 'Новая область',
             new_note: 'Новая Заметка',
+            new_text: 'New Text',
         },
 
         table_node_context_menu: {

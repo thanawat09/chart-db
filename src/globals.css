@@ -184,3 +184,14 @@
     position: relative;
     z-index: 10;
 }
+
+@keyframes chartdb-edge-dash {
+    to {
+        stroke-dashoffset: -10;
+    }
+}
+
+.chartdb-edge-dash-animated {
+    stroke-dasharray: 5 5;
+    animation: chartdb-edge-dash 0.5s linear infinite;
+}

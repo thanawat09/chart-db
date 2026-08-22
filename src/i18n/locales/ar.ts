@@ -251,6 +251,7 @@ export const ar: LanguageTranslation = {
                 tabs: {
                     areas: 'المناطق',
                     notes: 'ملاحظات',
+                    texts: 'Texts',
                 },
             },
 
@@ -272,6 +273,26 @@ export const ar: LanguageTranslation = {
                     },
                 },
             },
+
+            texts_section: {
+                filter: 'Filter',
+                add_text: 'Add Text',
+                no_results: 'No texts found',
+                clear: 'Clear Filter',
+                empty_state: {
+                    title: 'No Texts',
+                    description: 'Create a text label on the canvas',
+                },
+                text: {
+                    empty_text: 'Empty text',
+                    text_actions: {
+                        title: 'Text Actions',
+                        edit_content: 'Edit Content',
+                        delete_text: 'Delete Text',
+                    },
+                },
+            },
+
 
             custom_types_section: {
                 custom_types: 'الأنواع المخصصة',
@@ -520,6 +541,7 @@ export const ar: LanguageTranslation = {
             // TODO: Translate
             new_area: 'منطقة جديدة',
             new_note: 'ملاحظة جديدة',
+            new_text: 'New Text',
         },
 
         table_node_context_menu: {

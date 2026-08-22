@@ -24,16 +24,26 @@ import { MIN_TABLE_SIZE } from '@/lib/domain/db-table';
 import type { DiagramFilter } from '@/lib/domain/diagram-filter/diagram-filter';
 import { filterTable } from '@/lib/domain/diagram-filter/filter';
 import { getRelationshipFieldIds } from '@/lib/domain/field-collapsed-visibility';
+import { shouldHighlightRelationshipEdge } from '@/lib/domain/relationship-edge-highlight';
 import type { Note } from '@/lib/domain/note';
+import type { Text } from '@/lib/domain/text';
+import {
+    canConnectVisualEndpoints,
+    isVisualConnectorEndpointType,
+    type VisualConnector,
+} from '@/lib/domain/visual-connector';
 import type { Graph } from '@/lib/graph';
 import { removeVertex } from '@/lib/graph';
 import { cn, debounce, getOperatingSystem } from '@/lib/utils';
 import {
     getTablesInArea,
+    getTextsInArea,
     updateTablesParentAreas,
+    updateTextsParentAreas,
 } from '@/lib/utils/area-utils';
 import type {
     addEdge,
+    Connection,
     EdgeTypes,
     NodeChange,
     NodeDimensionChange,
@@ -93,8 +103,12 @@ import { useIsLostInCanvas } from './hooks/use-is-lost-in-canvas';
 import { MarkerDefinitions } from './marker-definitions';
 import type { NoteNodeType } from './note-node/note-node';
 import { NoteNode } from './note-node/note-node';
+import type { TextNodeType } from './text-node/text-node';
+import { TextNode } from './text-node/text-node';
 import type { RelationshipEdgeType } from './relationship-edge/relationship-edge';
 import { RelationshipEdge } from './relationship-edge/relationship-edge';
+import type { VisualConnectorEdgeType } from './visual-connector-edge/visual-connector-edge';
+import { VisualConnectorEdge } from './visual-connector-edge/visual-connector-edge';
 import { ShowAllButton } from './show-all-button';
 import type { TableNodeType } from './table-node/table-node';
 import {
@@ -130,12 +144,14 @@ const DEFAULT_EDGE_Z_INDEX = 0;
 export type EdgeType =
     | RelationshipEdgeType
     | DependencyEdgeType
-    | TempFloatingEdgeType;
+    | TempFloatingEdgeType
+    | VisualConnectorEdgeType;
 
 export type NodeType =
     | TableNodeType
     | AreaNodeType
     | NoteNodeType
+    | TextNodeType
     | TempCursorNodeType
     | CreateRelationshipNodeType;
 
@@ -145,12 +161,14 @@ const edgeTypes: EdgeTypes = {
     'relationship-edge': RelationshipEdge,
     'dependency-edge': DependencyEdge,
     'temp-floating-edge': TempFloatingEdge,
+    'visual-connector-edge': VisualConnectorEdge,
 };
 
 const nodeTypes: NodeTypes = {
     table: TableNode,
     area: AreaNode,
     note: NoteNode,
+    text: TextNode,
     'temp-cursor': TempCursorNode,
     'create-relationship': CreateRelationshipNode,
 };
@@ -270,6 +288,21 @@ const noteToNoteNode = (note: Note): NoteNodeType => {
     };
 };
 
+const textToTextNode = (text: Text): TextNodeType => {
+    return {
+        id: text.id,
+        type: 'text',
+        position: { x: text.x, y: text.y },
+        data: { text },
+        width: text.width,
+        height: text.height,
+        zIndex: 50,
+        style: {
+            zIndex: 50,
+        },
+    };
+};
+
 export interface CanvasProps {
     initialTables: DBTable[];
 }
@@ -288,12 +321,16 @@ export const Canvas: React.FC<CanvasProps> = ({ initialTables }) => {
         tables,
         areas,
         notes,
+        texts,
+        visualConnectors,
         relationships,
         createRelationship,
         createDependency,
+        createVisualConnector,
         updateTablesState,
         removeRelationships,
         removeDependencies,
+        removeVisualConnector,
         getField,
         databaseType,
         events,
@@ -303,6 +340,8 @@ export const Canvas: React.FC<CanvasProps> = ({ initialTables }) => {
         updateArea,
         removeNote,
         updateNote,
+        removeText,
+        updateText,
         highlightedCustomType,
         highlightCustomTypeId,
     } = useChartDB();
@@ -409,8 +448,14 @@ export const Canvas: React.FC<CanvasProps> = ({ initialTables }) => {
         // Force React Flow to re-register handles for all table nodes
         // This ensures handles exist before edges reference them
         const tableNodeIds = tables.map((t) => t.id);
-        if (tableNodeIds.length > 0) {
-            updateNodeInternals(tableNodeIds);
+        const visualNodeIds = [
+            ...notes.map((n) => n.id),
+            ...texts.map((t) => t.id),
+            ...areas.map((a) => a.id),
+        ];
+        const nodeIdsToUpdate = [...tableNodeIds, ...visualNodeIds];
+        if (nodeIdsToUpdate.length > 0) {
+            updateNodeInternals(nodeIdsToUpdate);
         }
 
         // Delay edge creation to ensure handles are registered
@@ -477,6 +522,24 @@ export const Canvas: React.FC<CanvasProps> = ({ initialTables }) => {
                             animated: prevState?.animated ?? false,
                         };
                     }),
+                    ...visualConnectors.map(
+                        (connector): VisualConnectorEdgeType => {
+                            const prevState = prevEdgeStates.get(connector.id);
+                            return {
+                                id: connector.id,
+                                source: connector.sourceId,
+                                target: connector.targetId,
+                                sourceHandle:
+                                    connector.sourceHandle ?? undefined,
+                                targetHandle:
+                                    connector.targetHandle ?? undefined,
+                                type: 'visual-connector-edge',
+                                data: { connector },
+                                selected: prevState?.selected ?? false,
+                                animated: false,
+                            };
+                        }
+                    ),
                 ];
             });
         }, 100); // Delay to let handles register after updateNodeInternals
@@ -485,9 +548,13 @@ export const Canvas: React.FC<CanvasProps> = ({ initialTables }) => {
     }, [
         relationships,
         dependencies,
+        visualConnectors,
         setEdges,
         showDBViews,
         tables,
+        notes,
+        texts,
+        areas,
         updateNodeInternals,
     ]);
 
@@ -527,9 +594,14 @@ export const Canvas: React.FC<CanvasProps> = ({ initialTables }) => {
                 .filter((e) => e.type !== 'temp-floating-edge')
                 .map((edge): EdgeType => {
                     const shouldBeHighlighted =
-                        selectedRelationshipIdsSet.has(edge.id) ||
-                        selectedTableIdsSet.has(edge.source) ||
-                        selectedTableIdsSet.has(edge.target);
+                        shouldHighlightRelationshipEdge({
+                            edgeId: edge.id,
+                            sourceNodeId: edge.source,
+                            targetNodeId: edge.target,
+                            selectedTableIds: selectedTableIdsSet,
+                            selectedRelationshipIds:
+                                selectedRelationshipIdsSet,
+                        });
 
                     const currentHighlighted =
                         (edge as Exclude<EdgeType, TempFloatingEdgeType>).data
@@ -564,7 +636,7 @@ export const Canvas: React.FC<CanvasProps> = ({ initialTables }) => {
                                 ? HIGHLIGHTED_EDGE_Z_INDEX
                                 : DEFAULT_EDGE_Z_INDEX,
                         };
-                    } else {
+                    } else if (edge.type === 'relationship-edge') {
                         const relationshipEdge = edge as RelationshipEdgeType;
                         return {
                             ...relationshipEdge,
@@ -577,7 +649,22 @@ export const Canvas: React.FC<CanvasProps> = ({ initialTables }) => {
                                 ? HIGHLIGHTED_EDGE_Z_INDEX
                                 : DEFAULT_EDGE_Z_INDEX,
                         };
+                    } else if (edge.type === 'visual-connector-edge') {
+                        const visualEdge = edge as VisualConnectorEdgeType;
+                        return {
+                            ...visualEdge,
+                            data: {
+                                ...visualEdge.data!,
+                                highlighted: shouldBeHighlighted,
+                            },
+                            animated: false,
+                            zIndex: shouldBeHighlighted
+                                ? HIGHLIGHTED_EDGE_Z_INDEX
+                                : DEFAULT_EDGE_Z_INDEX,
+                        };
                     }
+
+                    return edge;
                 });
 
             return hasChanges ? newEdges : prevEdges;
@@ -647,6 +734,7 @@ export const Canvas: React.FC<CanvasProps> = ({ initialTables }) => {
                     })
                 ),
                 ...notes.map((note) => noteToNoteNode(note)),
+                ...texts.map((text) => textToTextNode(text)),
                 ...prevNodes.filter(
                     (n) =>
                         n.type === 'temp-cursor' ||
@@ -665,6 +753,7 @@ export const Canvas: React.FC<CanvasProps> = ({ initialTables }) => {
         tables,
         areas,
         notes,
+        texts,
         setNodes,
         filter,
         databaseType,
@@ -749,6 +838,9 @@ export const Canvas: React.FC<CanvasProps> = ({ initialTables }) => {
             const visibleTables = nodes
                 .filter((node) => node.type === 'table' && !node.hidden)
                 .map((node) => (node as TableNodeType).data.table);
+            const visibleTexts = nodes
+                .filter((node) => node.type === 'text' && !node.hidden)
+                .map((node) => (node as TextNodeType).data.text);
             const visibleAreas = nodes
                 .filter((node) => node.type === 'area' && !node.hidden)
                 .map((node) => (node as AreaNodeType).data.area);
@@ -794,13 +886,73 @@ export const Canvas: React.FC<CanvasProps> = ({ initialTables }) => {
                     { updateHistory: false }
                 );
             }
+
+            const updatedTexts = updateTextsParentAreas(
+                visibleTexts,
+                visibleAreas
+            );
+            updatedTexts.forEach((newText, index) => {
+                const oldText = visibleTexts[index];
+                if (
+                    oldText &&
+                    (!!newText.parentAreaId || !!oldText.parentAreaId) &&
+                    newText.parentAreaId !== oldText.parentAreaId
+                ) {
+                    updateText(
+                        newText.id,
+                        { parentAreaId: newText.parentAreaId || null },
+                        { updateHistory: false }
+                    );
+                }
+            });
         }, 300);
 
         checkParentAreas();
-    }, [nodes, updateTablesState]);
+    }, [nodes, updateTablesState, updateText]);
 
     const onConnectHandler = useCallback(
         async (params: AddEdgeParams) => {
+            const sourceNode = getNode(params.source);
+            const targetNode = getNode(params.target);
+
+            if (
+                sourceNode &&
+                targetNode &&
+                isVisualConnectorEndpointType(sourceNode.type ?? '') &&
+                isVisualConnectorEndpointType(targetNode.type ?? '')
+            ) {
+                if (
+                    !canConnectVisualEndpoints(
+                        sourceNode.type ?? '',
+                        sourceNode.id,
+                        targetNode.type ?? '',
+                        targetNode.id
+                    )
+                ) {
+                    return;
+                }
+
+                await createVisualConnector({
+                    sourceType: sourceNode.type as VisualConnector['sourceType'],
+                    sourceId: sourceNode.id,
+                    targetType: targetNode.type as VisualConnector['targetType'],
+                    targetId: targetNode.id,
+                    sourceHandle: params.sourceHandle,
+                    targetHandle: params.targetHandle,
+                });
+                return;
+            }
+
+            if (
+                (sourceNode &&
+                    isVisualConnectorEndpointType(sourceNode.type ?? '')) ||
+                (targetNode &&
+                    isVisualConnectorEndpointType(targetNode.type ?? ''))
+            ) {
+                // Reject mixed visual ↔ table connections
+                return;
+            }
+
             if (
                 params.sourceHandle?.startsWith?.(
                     TOP_SOURCE_HANDLE_ID_PREFIX
@@ -854,7 +1006,45 @@ export const Canvas: React.FC<CanvasProps> = ({ initialTables }) => {
                 targetFieldId,
             });
         },
-        [createRelationship, createDependency, getField, toast, databaseType]
+        [
+            createRelationship,
+            createDependency,
+            createVisualConnector,
+            getField,
+            getNode,
+            toast,
+            databaseType,
+        ]
+    );
+
+    const isValidConnectionHandler = useCallback(
+        (connection: Connection | EdgeType) => {
+            if (readonly) {
+                return false;
+            }
+
+            const sourceNode = getNode(connection.source);
+            const targetNode = getNode(connection.target);
+            if (!sourceNode || !targetNode) {
+                return false;
+            }
+
+            const sourceType = sourceNode.type ?? '';
+            const targetType = targetNode.type ?? '';
+            const visualTypes = new Set(['text', 'note', 'area']);
+
+            if (visualTypes.has(sourceType) || visualTypes.has(targetType)) {
+                return canConnectVisualEndpoints(
+                    sourceType,
+                    sourceNode.id,
+                    targetType,
+                    targetNode.id
+                );
+            }
+
+            return true;
+        },
+        [getNode, readonly]
     );
 
     const onEdgesChangeHandler: OnEdgesChange<EdgeType> = useCallback(
@@ -887,12 +1077,24 @@ export const Canvas: React.FC<CanvasProps> = ({ initialTables }) => {
                 ) as DependencyEdgeType[]
             ).map((edge) => edge?.data?.dependency?.id as string);
 
+            const visualConnectorsToRemove: string[] = (
+                edgesToRemove.filter(
+                    (edge) => edge?.type === 'visual-connector-edge'
+                ) as VisualConnectorEdgeType[]
+            ).map((edge) => edge?.data?.connector?.id as string);
+
             if (relationshipsToRemove.length > 0) {
                 removeRelationships(relationshipsToRemove);
             }
 
             if (dependenciesToRemove.length > 0) {
                 removeDependencies(dependenciesToRemove);
+            }
+
+            if (visualConnectorsToRemove.length > 0) {
+                for (const id of visualConnectorsToRemove) {
+                    removeVisualConnector(id);
+                }
             }
 
             return onEdgesChange(changesToApply);
@@ -902,6 +1104,7 @@ export const Canvas: React.FC<CanvasProps> = ({ initialTables }) => {
             onEdgesChange,
             removeRelationships,
             removeDependencies,
+            removeVisualConnector,
             readonly,
         ]
     );
@@ -1073,6 +1276,22 @@ export const Canvas: React.FC<CanvasProps> = ({ initialTables }) => {
                                 dragging: true,
                             });
                         });
+
+                        const childTexts = texts.filter(
+                            (text) => text.parentAreaId === areaChange.id
+                        );
+
+                        childTexts.forEach((text) => {
+                            additionalChanges.push({
+                                id: text.id,
+                                type: 'position',
+                                position: {
+                                    x: text.x + deltaX,
+                                    y: text.y + deltaY,
+                                },
+                                dragging: true,
+                            });
+                        });
                     }
                 });
 
@@ -1094,12 +1313,23 @@ export const Canvas: React.FC<CanvasProps> = ({ initialTables }) => {
                 sizeChanges: noteSizeChanges,
             } = findRelevantNodesChanges(changesToApply, 'note');
 
+            // Then, detect text changes
+            const {
+                positionChanges: textPositionChanges,
+                removeChanges: textRemoveChanges,
+                sizeChanges: textSizeChanges,
+            } = findRelevantNodesChanges(changesToApply, 'text');
+
             // Then, detect table changes
             const { positionChanges, removeChanges, sizeChanges } =
                 findRelevantNodesChanges(changesToApply, 'table');
 
             // Calculate child table movements from area position changes
             const childTableMovements: Map<
+                string,
+                { deltaX: number; deltaY: number }
+            > = new Map();
+            const childTextMovements: Map<
                 string,
                 { deltaX: number; deltaY: number }
             > = new Map();
@@ -1122,6 +1352,17 @@ export const Canvas: React.FC<CanvasProps> = ({ initialTables }) => {
                             );
                             childTables.forEach((table) => {
                                 childTableMovements.set(table.id, {
+                                    deltaX,
+                                    deltaY,
+                                });
+                            });
+
+                            const childTexts = getTextsInArea(
+                                change.id,
+                                texts
+                            );
+                            childTexts.forEach((text) => {
+                                childTextMovements.set(text.id, {
                                     deltaX,
                                     deltaY,
                                 });
@@ -1318,6 +1559,60 @@ export const Canvas: React.FC<CanvasProps> = ({ initialTables }) => {
                 }
             }
 
+            // Handle text changes (+ child text movements from area drag)
+            if (
+                textPositionChanges.length > 0 ||
+                textRemoveChanges.length > 0 ||
+                textSizeChanges.length > 0 ||
+                childTextMovements.size > 0
+            ) {
+                const textsUpdates: Record<string, Partial<Text>> = {};
+
+                textPositionChanges.forEach((change) => {
+                    if (change.type === 'position' && change.position) {
+                        textsUpdates[change.id] = {
+                            ...textsUpdates[change.id],
+                            x: change.position.x,
+                            y: change.position.y,
+                        };
+                    }
+                });
+
+                textSizeChanges.forEach((change) => {
+                    if (change.type === 'dimensions' && change.dimensions) {
+                        textsUpdates[change.id] = {
+                            ...textsUpdates[change.id],
+                            width: change.dimensions.width,
+                            height: change.dimensions.height,
+                        };
+                    }
+                });
+
+                childTextMovements.forEach((movement, textId) => {
+                    if (textsUpdates[textId]?.x !== undefined) {
+                        return;
+                    }
+                    const currentText = texts.find((t) => t.id === textId);
+                    if (!currentText) return;
+                    textsUpdates[textId] = {
+                        ...textsUpdates[textId],
+                        x: currentText.x + movement.deltaX,
+                        y: currentText.y + movement.deltaY,
+                    };
+                });
+
+                textRemoveChanges.forEach((change) => {
+                    removeText(change.id);
+                    delete textsUpdates[change.id];
+                });
+
+                if (Object.keys(textsUpdates).length > 0) {
+                    for (const [id, updates] of Object.entries(textsUpdates)) {
+                        updateText(id, updates);
+                    }
+                }
+            }
+
             return onNodesChange(changesToApply);
         },
         [
@@ -1329,9 +1624,12 @@ export const Canvas: React.FC<CanvasProps> = ({ initialTables }) => {
             removeArea,
             updateNote,
             removeNote,
+            updateText,
+            removeText,
             readonly,
             tables,
             areas,
+            texts,
             getNode,
         ]
     );
@@ -1699,6 +1997,7 @@ export const Canvas: React.FC<CanvasProps> = ({ initialTables }) => {
                     maxZoom={5}
                     minZoom={0.1}
                     onConnect={onConnectHandler}
+                    isValidConnection={isValidConnectionHandler}
                     proOptions={{
                         hideAttribution: true,
                     }}

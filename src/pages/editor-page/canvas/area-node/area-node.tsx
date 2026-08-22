@@ -31,6 +31,7 @@ import { AreaNodeContextMenu } from './area-node-context-menu';
 import { useCanvas } from '@/hooks/use-canvas';
 import { useDiff } from '@/context/diff-context/use-diff';
 import { AreaNodeStatus } from './area-node-status/area-node-status';
+import { VisualHandles } from '../visual-handles';
 
 export type AreaNodeType = Node<
     {
@@ -45,11 +46,13 @@ export const AreaNode: React.FC<NodeProps<AreaNodeType>> = React.memo(
         const { t } = useTranslation();
         const [editMode, setEditMode] = useState(false);
         const [areaName, setAreaName] = useState(area.name);
+        const [hovered, setHovered] = useState(false);
         const inputRef = React.useRef<HTMLInputElement>(null);
         const { openAreaFromSidebar, selectSidebarSection, selectVisualsTab } =
             useLayout();
 
         const focused = !!selected && !dragging;
+        const showHandles = (focused || hovered) && !readonly;
 
         const { checkIfNewArea, checkIfAreaRemoved } = useDiff();
 
@@ -148,7 +151,13 @@ export const AreaNode: React.FC<NodeProps<AreaNodeType>> = React.memo(
                             openAreaInEditor();
                         }
                     }}
+                    onMouseEnter={() => setHovered(true)}
+                    onMouseLeave={() => setHovered(false)}
                 >
+                    <VisualHandles
+                        visible={showHandles}
+                        isConnectable={!readonly}
+                    />
                     <AreaNodeStatus
                         status={
                             isDiffNewArea
