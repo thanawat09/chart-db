@@ -24,8 +24,8 @@ import { MIN_TABLE_SIZE } from '@/lib/domain/db-table';
 import type { DiagramFilter } from '@/lib/domain/diagram-filter/diagram-filter';
 import { filterTable } from '@/lib/domain/diagram-filter/filter';
 import { getRelationshipFieldIds } from '@/lib/domain/field-collapsed-visibility';
-import { shouldHighlightRelationshipEdge } from '@/lib/domain/relationship-edge-highlight';
 import type { Note } from '@/lib/domain/note';
+import { shouldHighlightRelationshipEdge } from '@/lib/domain/relationship-edge-highlight';
 import type { Text } from '@/lib/domain/text';
 import {
     canConnectVisualEndpoints,
@@ -103,12 +103,8 @@ import { useIsLostInCanvas } from './hooks/use-is-lost-in-canvas';
 import { MarkerDefinitions } from './marker-definitions';
 import type { NoteNodeType } from './note-node/note-node';
 import { NoteNode } from './note-node/note-node';
-import type { TextNodeType } from './text-node/text-node';
-import { TextNode } from './text-node/text-node';
 import type { RelationshipEdgeType } from './relationship-edge/relationship-edge';
 import { RelationshipEdge } from './relationship-edge/relationship-edge';
-import type { VisualConnectorEdgeType } from './visual-connector-edge/visual-connector-edge';
-import { VisualConnectorEdge } from './visual-connector-edge/visual-connector-edge';
 import { ShowAllButton } from './show-all-button';
 import type { TableNodeType } from './table-node/table-node';
 import {
@@ -136,7 +132,11 @@ import {
     TEMP_FLOATING_EDGE_ID,
     TempFloatingEdge,
 } from './temp-floating-edge/temp-floating-edge';
+import type { TextNodeType } from './text-node/text-node';
+import { TextNode } from './text-node/text-node';
 import { Toolbar } from './toolbar/toolbar';
+import type { VisualConnectorEdgeType } from './visual-connector-edge/visual-connector-edge';
+import { VisualConnectorEdge } from './visual-connector-edge/visual-connector-edge';
 
 const HIGHLIGHTED_EDGE_Z_INDEX = 1;
 const DEFAULT_EDGE_Z_INDEX = 0;
@@ -1984,7 +1984,6 @@ export const Canvas: React.FC<CanvasProps> = ({ initialTables }) => {
                 onMouseMove={handleMouseMove}
             >
                 <ReactFlow
-                    onlyRenderVisibleElements
                     colorMode={effectiveTheme}
                     className={cn('nodes-animated', {
                         'canvas-cursor-multi-select': shiftPressed,
