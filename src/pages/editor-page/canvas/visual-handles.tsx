@@ -1,7 +1,7 @@
-import React from 'react';
-import { Handle, Position } from '@xyflow/react';
-import { cn } from '@/lib/utils';
 import { VISUAL_CONNECTOR_HANDLE_IDS } from '@/lib/domain/visual-connector';
+import { cn } from '@/lib/utils';
+import { Handle, Position } from '@xyflow/react';
+import React from 'react';
 
 const HANDLE_POSITIONS: {
     id: (typeof VISUAL_CONNECTOR_HANDLE_IDS)[number];
@@ -16,12 +16,20 @@ const HANDLE_POSITIONS: {
 export interface VisualHandlesProps {
     visible: boolean;
     isConnectable?: boolean;
+    /** RF-style hollow handle (for Text node) vs sky filled (notes/areas) */
+    variant?: 'default' | 'outline';
 }
 
 export const VisualHandles: React.FC<VisualHandlesProps> = ({
     visible,
     isConnectable = true,
+    variant = 'default',
 }) => {
+    const handleClass =
+        variant === 'outline'
+            ? '!size-2.5 !rounded-full !border !border-[#b1b1b7] !bg-[#1e1e1e] !transition-opacity dark:!border-[#b1b1b7] dark:!bg-[#1e1e1e]'
+            : '!size-2.5 !rounded-full !border-2 !border-sky-500 !bg-white !transition-opacity dark:!bg-slate-900';
+
     return (
         <>
             {HANDLE_POSITIONS.map(({ id, position }) => (
@@ -32,7 +40,7 @@ export const VisualHandles: React.FC<VisualHandlesProps> = ({
                         position={position}
                         isConnectable={isConnectable}
                         className={cn(
-                            '!size-2.5 !rounded-full !border-2 !border-sky-500 !bg-white !transition-opacity dark:!bg-slate-900',
+                            handleClass,
                             visible
                                 ? '!opacity-100'
                                 : '!pointer-events-none !opacity-0'
@@ -45,7 +53,7 @@ export const VisualHandles: React.FC<VisualHandlesProps> = ({
                         position={position}
                         isConnectable={isConnectable}
                         className={cn(
-                            '!size-2.5 !rounded-full !border-2 !border-sky-500 !bg-white !transition-opacity dark:!bg-slate-900',
+                            handleClass,
                             visible
                                 ? '!opacity-100'
                                 : '!pointer-events-none !opacity-0'

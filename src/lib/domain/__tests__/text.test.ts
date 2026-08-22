@@ -1,11 +1,11 @@
-import { describe, it, expect } from 'vitest';
-import { textSchema, createDefaultText } from '../text';
+import { describe, expect, it } from 'vitest';
+import { createDefaultText, textSchema } from '../text';
 
 describe('text', () => {
     it('parses a valid text', () => {
         const t = createDefaultText({ id: 't1', content: 'Hello' });
         expect(textSchema.parse(t).content).toBe('Hello');
-        expect(t.textAlign).toBe('left');
+        expect(t.textAlign).toBe('center');
         expect(t.parentAreaId).toBeNull();
     });
 

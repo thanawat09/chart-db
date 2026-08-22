@@ -1,14 +1,15 @@
-import React, { useCallback, useMemo } from 'react';
 import { Button } from '@/components/button/button';
-import { Type, X } from 'lucide-react';
+import { EmptyState } from '@/components/empty-state/empty-state';
 import { Input } from '@/components/input/input';
-import type { Text } from '@/lib/domain/text';
+import { ScrollArea } from '@/components/scroll-area/scroll-area';
 import { useChartDB } from '@/hooks/use-chartdb';
 import { useLayout } from '@/hooks/use-layout';
-import { EmptyState } from '@/components/empty-state/empty-state';
-import { ScrollArea } from '@/components/scroll-area/scroll-area';
-import { useTranslation } from 'react-i18next';
+import { useTheme } from '@/hooks/use-theme';
+import type { Text } from '@/lib/domain/text';
 import { useViewport } from '@xyflow/react';
+import { Type, X } from 'lucide-react';
+import React, { useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { TextsList } from './texts-list/texts-list';
 
 export interface TextsTabProps {}
@@ -18,6 +19,7 @@ export const TextsTab: React.FC<TextsTabProps> = () => {
     const viewport = useViewport();
     const { t } = useTranslation();
     const { openTextFromSidebar } = useLayout();
+    const { effectiveTheme } = useTheme();
     const [filterText, setFilterText] = React.useState('');
     const filterInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -36,12 +38,14 @@ export const TextsTab: React.FC<TextsTabProps> = () => {
         const text = await createText({
             x: centerX,
             y: centerY,
+            textColor: effectiveTheme === 'dark' ? '#f8f8f8' : '#111827',
         });
         if (openTextFromSidebar) {
             openTextFromSidebar(text.id);
         }
     }, [
         createText,
+        effectiveTheme,
         openTextFromSidebar,
         viewport.x,
         viewport.y,

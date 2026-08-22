@@ -5,6 +5,7 @@ import type { CanvasEvent } from '@/context/canvas-context/canvas-context';
 import { useCanvas } from '@/hooks/use-canvas';
 import { useChartDB } from '@/hooks/use-chartdb';
 import type { Text, TextAlign } from '@/lib/domain/text';
+import { cn } from '@/lib/utils';
 import {
     NodeResizer,
     NodeToolbar,
@@ -141,25 +142,21 @@ export const TextNode: React.FC<TextNodeProps> = ({
 
     return (
         <div
-            className="relative flex h-full w-full overflow-hidden px-2.5 py-2"
-            style={{
-                borderRadius:
-                    'var(--xy-node-border-radius, var(--xy-node-border-radius-default))',
-                backgroundColor:
-                    'var(--xy-node-background-color, var(--xy-node-background-color-default))',
-                border: selected
-                    ? '1px solid #db2777'
-                    : 'var(--xy-node-border, var(--xy-node-border-default))',
-                boxShadow:
-                    selected || !hovered
-                        ? undefined
-                        : 'var(--xy-node-boxshadow-hover, var(--xy-node-boxshadow-hover-default))',
-            }}
+            className={cn(
+                'relative flex h-full w-full items-center overflow-hidden rounded-xl border px-4 py-3 shadow-sm',
+                selected
+                    ? 'border-pink-600 bg-white dark:bg-[#1e1e1e]'
+                    : 'border-neutral-300 bg-white hover:shadow-md dark:border-[#3c3c3c] dark:bg-[#1e1e1e] dark:hover:shadow-[0_1px_4px_1px_rgba(255,255,255,0.08)]'
+            )}
             onDoubleClick={handleDoubleClick}
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
         >
-            <VisualHandles visible={showHandles} isConnectable={!readonly} />
+            <VisualHandles
+                visible={showHandles}
+                isConnectable={!readonly}
+                variant="outline"
+            />
 
             {focused && !readonly ? (
                 <NodeResizer
@@ -260,7 +257,7 @@ export const TextNode: React.FC<TextNodeProps> = ({
                     }}
                 >
                     {text.content || (
-                        <span className="italic opacity-50">
+                        <span className="italic text-neutral-400 dark:text-neutral-500">
                             Double-click to edit
                         </span>
                     )}

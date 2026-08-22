@@ -16,6 +16,7 @@ import { useChartDB } from '@/hooks/use-chartdb';
 import { useDialog } from '@/hooks/use-dialog';
 import { useLayout } from '@/hooks/use-layout';
 import { useLocalConfig } from '@/hooks/use-local-config';
+import { useTheme } from '@/hooks/use-theme';
 import { defaultSchemas } from '@/lib/data/default-schemas';
 import { arrangeTablesForArea } from '@/lib/utils/area-utils';
 import { useReactFlow, useStore } from '@xyflow/react';
@@ -56,6 +57,7 @@ export const CanvasContextMenu: React.FC<React.PropsWithChildren> = ({
     const { screenToFlowPosition, getNodes } = useReactFlow();
     const { t } = useTranslation();
     const { showDBViews } = useLocalConfig();
+    const { effectiveTheme } = useTheme();
     const { setEditTableModeTable, reorderTables } = useCanvas();
     const { showAlert } = useAlert();
     const {
@@ -190,6 +192,7 @@ export const CanvasContextMenu: React.FC<React.PropsWithChildren> = ({
             const text = await createText({
                 x: position.x,
                 y: position.y,
+                textColor: effectiveTheme === 'dark' ? '#f8f8f8' : '#111827',
             });
             showSidePanel();
             selectSidebarSection('visuals');
@@ -198,6 +201,7 @@ export const CanvasContextMenu: React.FC<React.PropsWithChildren> = ({
         },
         [
             createText,
+            effectiveTheme,
             screenToFlowPosition,
             showSidePanel,
             selectSidebarSection,

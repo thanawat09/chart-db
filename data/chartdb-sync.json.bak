@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
-  "workspaceRevision": 400,
-  "updatedAt": "2026-08-22T10:47:30.074Z",
+  "workspaceRevision": 412,
+  "updatedAt": "2026-08-22T10:51:56.909Z",
   "config": {
     "revision": 11,
     "defaultDiagramId": "lhnima1maasp"
   },
   "diagrams": {
     "lhnima1maasp": {
-      "revision": 333,
-      "updatedAt": "2026-08-22T10:47:30.074Z",
-      "hash": "sha256:624fcdee63125ebaeb3ee5dbc04a02fcaef542d3b516528e4a68a085a07b502d",
+      "revision": 345,
+      "updatedAt": "2026-08-22T10:51:56.909Z",
+      "hash": "sha256:cc4f75e5322b30fed6a7a5f8f3e6368fa1c9b7bede54edf12e0cd11cfd470d7a",
       "data": {
         "id": "lhnima1maasp",
         "name": "i clean",
         "databaseType": "postgresql",
         "createdAt": "2026-07-29T12:47:31.129Z",
-        "updatedAt": "2026-08-22T10:47:27.665Z",
+        "updatedAt": "2026-08-22T10:51:51.350Z",
         "tables": [
           {
             "id": "0tju7206xn5mku6bk6pslvxqz",
@@ -9545,15 +9545,15 @@
         ],
         "texts": [
           {
-            "id": "b2hl9l4wodz5exigzxh3yvlhz",
-            "content": "dfdfdfs",
-            "x": -4386.171267453092,
-            "y": -33.74699756877193,
+            "id": "4yab3ccynu987o7dstry2bxbg",
+            "content": "dfdfdf",
+            "x": -266.9681715059102,
+            "y": 279.3226819433612,
             "width": 200,
             "height": 80,
-            "textColor": "#111827",
+            "textColor": "#f8f8f8",
             "fontSize": 16,
-            "textAlign": "left",
+            "textAlign": "center",
             "parentAreaId": null,
             "diagramId": "lhnima1maasp"
           }

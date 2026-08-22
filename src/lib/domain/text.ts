@@ -37,9 +37,9 @@ export const createDefaultText = (partial: Partial<Text> & { id: string }): Text
     y: 0,
     width: 200,
     height: 80,
-    textColor: '#111827',
+    textColor: '#f8f8f8',
     fontSize: 16,
-    textAlign: 'left',
+    textAlign: 'center',
     parentAreaId: null,
     ...partial,
 });
