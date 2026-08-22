@@ -48,7 +48,7 @@ export const MarkerDefinitions: React.FC = () => {
                                     className={cn([
                                         selected
                                             ? 'fill-pink-600'
-                                            : 'fill-muted-foreground',
+                                            : 'fill-zinc-500 dark:fill-zinc-600',
                                         'stroke-background',
                                         'stroke-[0.5]',
                                     ])}

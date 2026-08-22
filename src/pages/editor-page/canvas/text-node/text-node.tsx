@@ -1,10 +1,16 @@
-import React, { useCallback, useState, useRef } from 'react';
+import { Button } from '@/components/button/button';
+import { ColorPicker } from '@/components/color-picker/color-picker';
+import { Input } from '@/components/input/input';
+import type { CanvasEvent } from '@/context/canvas-context/canvas-context';
+import { useCanvas } from '@/hooks/use-canvas';
+import { useChartDB } from '@/hooks/use-chartdb';
+import type { Text, TextAlign } from '@/lib/domain/text';
 import {
     NodeResizer,
     NodeToolbar,
     Position,
-    type NodeProps,
     type Node,
+    type NodeProps,
 } from '@xyflow/react';
 import {
     AlignCenter,
@@ -12,15 +18,8 @@ import {
     AlignRight,
     Trash2,
 } from 'lucide-react';
-import type { Text, TextAlign } from '@/lib/domain/text';
-import { useChartDB } from '@/hooks/use-chartdb';
+import React, { useCallback, useRef, useState } from 'react';
 import { useClickAway, useKeyPressEvent } from 'react-use';
-import { ColorPicker } from '@/components/color-picker/color-picker';
-import { Button } from '@/components/button/button';
-import { Input } from '@/components/input/input';
-import { cn } from '@/lib/utils';
-import { useCanvas } from '@/hooks/use-canvas';
-import type { CanvasEvent } from '@/context/canvas-context/canvas-context';
 import { VisualHandles } from '../visual-handles';
 
 export interface TextNodeProps extends NodeProps {
@@ -142,12 +141,20 @@ export const TextNode: React.FC<TextNodeProps> = ({
 
     return (
         <div
-            className={cn(
-                'relative flex h-full w-full overflow-hidden rounded-sm border bg-transparent',
-                selected
-                    ? 'border-pink-600'
-                    : 'border-transparent hover:border-slate-300 dark:hover:border-slate-600'
-            )}
+            className="relative flex h-full w-full overflow-hidden px-2.5 py-2"
+            style={{
+                borderRadius:
+                    'var(--xy-node-border-radius, var(--xy-node-border-radius-default))',
+                backgroundColor:
+                    'var(--xy-node-background-color, var(--xy-node-background-color-default))',
+                border: selected
+                    ? '1px solid #db2777'
+                    : 'var(--xy-node-border, var(--xy-node-border-default))',
+                boxShadow:
+                    selected || !hovered
+                        ? undefined
+                        : 'var(--xy-node-boxshadow-hover, var(--xy-node-boxshadow-hover-default))',
+            }}
             onDoubleClick={handleDoubleClick}
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
@@ -225,7 +232,7 @@ export const TextNode: React.FC<TextNodeProps> = ({
             {editMode ? (
                 <textarea
                     ref={textareaRef}
-                    className="nodrag size-full resize-none overflow-auto border-none bg-transparent p-1 outline-none"
+                    className="nodrag size-full resize-none overflow-auto border-none bg-transparent outline-none"
                     style={{
                         color: text.textColor,
                         fontSize: text.fontSize,
@@ -245,7 +252,7 @@ export const TextNode: React.FC<TextNodeProps> = ({
                 />
             ) : (
                 <div
-                    className="size-full overflow-auto break-words p-1 whitespace-pre-wrap"
+                    className="size-full overflow-auto break-words whitespace-pre-wrap"
                     style={{
                         color: text.textColor,
                         fontSize: text.fontSize,
@@ -253,7 +260,7 @@ export const TextNode: React.FC<TextNodeProps> = ({
                     }}
                 >
                     {text.content || (
-                        <span className="italic text-muted-foreground">
+                        <span className="italic opacity-50">
                             Double-click to edit
                         </span>
                     )}

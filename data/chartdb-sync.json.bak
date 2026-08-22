@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
-  "workspaceRevision": 390,
-  "updatedAt": "2026-08-22T10:28:23.473Z",
+  "workspaceRevision": 400,
+  "updatedAt": "2026-08-22T10:47:30.074Z",
   "config": {
     "revision": 11,
     "defaultDiagramId": "lhnima1maasp"
   },
   "diagrams": {
     "lhnima1maasp": {
-      "revision": 323,
-      "updatedAt": "2026-08-22T10:28:23.473Z",
-      "hash": "sha256:1252ef9e570e421379130dddca5cc4b81d5e53acd3f272dfb0f31ab7c534eb85",
+      "revision": 333,
+      "updatedAt": "2026-08-22T10:47:30.074Z",
+      "hash": "sha256:624fcdee63125ebaeb3ee5dbc04a02fcaef542d3b516528e4a68a085a07b502d",
       "data": {
         "id": "lhnima1maasp",
         "name": "i clean",
         "databaseType": "postgresql",
         "createdAt": "2026-07-29T12:47:31.129Z",
-        "updatedAt": "2026-08-22T10:28:19.132Z",
+        "updatedAt": "2026-08-22T10:47:27.665Z",
         "tables": [
           {
             "id": "0tju7206xn5mku6bk6pslvxqz",
@@ -772,8 +772,8 @@
             "id": "34y7otr4unak1p91gkkiud2pz",
             "name": "wfm_service_plans",
             "schema": "public",
-            "x": -2940.6060351615324,
-            "y": -1080.3357798048141,
+            "x": -3042.676178458153,
+            "y": -1135.2966261953022,
             "fields": [
               {
                 "id": "a15w03q584jogadh284ppqp14",
@@ -2827,8 +2827,8 @@
             "id": "asdi0il3cll52nu2im2dkk0rq",
             "name": "wfm_positions",
             "schema": "public",
-            "x": -4281.421683587707,
-            "y": 369.3376686154076,
+            "x": -3919.9005454526023,
+            "y": 201.92183954613077,
             "fields": [
               {
                 "id": "nc223ny3hwhbm501indznkeyi",
@@ -3482,8 +3482,8 @@
             "id": "hvfmt7vi7kom6jhf3vfuyagf9",
             "name": "wfm_timesheets",
             "schema": "public",
-            "x": -4580,
-            "y": 800,
+            "x": -4218.478861864895,
+            "y": 632.5841709307231,
             "fields": [
               {
                 "id": "cttwuix0rmzzttxfvlojwczbe",
@@ -4788,8 +4788,8 @@
             "id": "ocjol4a72t71g48kqr0jbur7y",
             "name": "wfm_service_plan_details",
             "schema": "public",
-            "x": -2460,
-            "y": -860,
+            "x": -2562.0701432966207,
+            "y": -914.9608463904881,
             "fields": [
               {
                 "id": "fpn5m55a2ur5g9xzta5k1vgmx",
@@ -5173,8 +5173,8 @@
             "id": "p3o69m2v2hj9jkds7wofa0mea",
             "name": "wfm_staffs",
             "schema": "public",
-            "x": -4728.2431045125995,
-            "y": 344.14723650117554,
+            "x": -4366.721966377495,
+            "y": 176.7314074318987,
             "fields": [
               {
                 "id": "rqkkulptvsdjm2fm240j67myo",
@@ -9453,8 +9453,8 @@
           {
             "id": "0kabkgbpf6ra55di0vg4xtifj",
             "name": "Area 5",
-            "x": -4800,
-            "y": 280,
+            "x": -4438.478861864895,
+            "y": 112.58417093072316,
             "width": 890,
             "height": 980,
             "color": "#ff6363",
@@ -9483,8 +9483,8 @@
           {
             "id": "iygp8o3eb6eggqr3vxhk6t5kb",
             "name": "แผนการให้บริการ",
-            "x": -2960,
-            "y": -1120,
+            "x": -3062.0701432966207,
+            "y": -1174.960846390488,
             "width": 947,
             "height": 716,
             "color": "#ff6363",
@@ -9543,7 +9543,21 @@
             "diagramId": "lhnima1maasp"
           }
         ],
-        "texts": [],
+        "texts": [
+          {
+            "id": "b2hl9l4wodz5exigzxh3yvlhz",
+            "content": "dfdfdfs",
+            "x": -4386.171267453092,
+            "y": -33.74699756877193,
+            "width": 200,
+            "height": 80,
+            "textColor": "#111827",
+            "fontSize": 16,
+            "textAlign": "left",
+            "parentAreaId": null,
+            "diagramId": "lhnima1maasp"
+          }
+        ],
         "visualConnectors": []
       }
     },

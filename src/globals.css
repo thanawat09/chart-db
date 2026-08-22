@@ -187,11 +187,22 @@
 
 @keyframes chartdb-edge-dash {
     to {
-        stroke-dashoffset: -10;
+        stroke-dashoffset: -28;
+    }
+}
+
+@keyframes chartdb-edge-dash-reverse {
+    to {
+        stroke-dashoffset: 28;
     }
 }
 
 .chartdb-edge-dash-animated {
-    stroke-dasharray: 5 5;
-    animation: chartdb-edge-dash 0.5s linear infinite;
+    stroke-dasharray: 16 12;
+    animation: chartdb-edge-dash 0.8s linear infinite;
+}
+
+.chartdb-edge-dash-animated-reverse {
+    stroke-dasharray: 16 12;
+    animation: chartdb-edge-dash-reverse 0.8s linear infinite;
 }

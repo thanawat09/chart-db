@@ -419,8 +419,50 @@ export const RelationshipEdge: React.FC<EdgeProps<RelationshipEdgeType>> =
                 targetY,
             ]);
 
-            const isAnimated =
+            const isHighlighted =
                 !!animated || !!data?.highlighted || !!selected;
+
+            // Dash flow along path (source→target). Reverse when PK is on target side
+            // so animation always reads PK → FK.
+            const dashFlowsPkToFkForward = useMemo(() => {
+                if (!relationship) {
+                    return true;
+                }
+
+                const sourceTable = getTable(relationship.sourceTableId);
+                const targetTable = getTable(relationship.targetTableId);
+                const sourceField = sourceTable?.fields.find(
+                    (f) => f.id === relationship.sourceFieldId
+                );
+                const targetField = targetTable?.fields.find(
+                    (f) => f.id === relationship.targetFieldId
+                );
+                const sourceIsPk = !!sourceField?.primaryKey;
+                const targetIsPk = !!targetField?.primaryKey;
+
+                if (sourceIsPk && !targetIsPk) {
+                    return true;
+                }
+                if (targetIsPk && !sourceIsPk) {
+                    return false;
+                }
+
+                // Fallback: one → many usually means PK → FK
+                if (
+                    relationship.sourceCardinality === 'one' &&
+                    relationship.targetCardinality === 'many'
+                ) {
+                    return true;
+                }
+                if (
+                    relationship.sourceCardinality === 'many' &&
+                    relationship.targetCardinality === 'one'
+                ) {
+                    return false;
+                }
+
+                return true;
+            }, [getTable, relationship]);
 
             const edgeStroke = useMemo(() => {
                 if (isDiffNewRelationship) {
@@ -438,15 +480,27 @@ export const RelationshipEdge: React.FC<EdgeProps<RelationshipEdgeType>> =
                     return effectiveTheme === 'dark' ? '#60a5fa' : '#2563eb'; // blue
                 }
 
-                // No relevant table selected — default slate
-                return isAnimated ? '#db2777' : '#94a3b8';
+                if (isHighlighted) {
+                    return '#db2777';
+                }
+
+                // Idle — soft muted gray
+                return effectiveTheme === 'dark' ? '#52525b' : '#a1a1aa';
             }, [
                 effectiveTheme,
-                isAnimated,
                 isDiffNewRelationship,
                 isDiffRelationshipRemoved,
+                isHighlighted,
                 selectedTableFieldIsPk,
             ]);
+
+            const idleStrokeWidth = 1.25;
+            const edgeStrokeWidth =
+                isDiffNewRelationship || isDiffRelationshipRemoved
+                    ? 3
+                    : isHighlighted
+                      ? 2.5
+                      : idleStrokeWidth;
 
             return (
                 <>
@@ -458,20 +512,13 @@ export const RelationshipEdge: React.FC<EdgeProps<RelationshipEdgeType>> =
                         fill="none"
                         style={{
                             stroke: edgeStroke,
-                            strokeWidth:
-                                isDiffNewRelationship ||
-                                isDiffRelationshipRemoved
-                                    ? 3
-                                    : isAnimated
-                                      ? 2.5
-                                      : 2,
+                            strokeWidth: edgeStrokeWidth,
                         }}
                         className={cn([
                             'react-flow__edge-path',
-                            {
-                                'chartdb-edge-dash-animated':
-                                    !!animated || !!data?.highlighted,
-                            },
+                            dashFlowsPkToFkForward
+                                ? 'chartdb-edge-dash-animated'
+                                : 'chartdb-edge-dash-animated-reverse',
                         ])}
                         onClick={handleEdgeClick}
                         onContextMenu={handleContextMenu}
