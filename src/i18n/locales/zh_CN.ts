@@ -147,6 +147,8 @@ export const zh_CN: LanguageTranslation = {
                         title: '字段属性',
                         unique: '唯一',
                         auto_increment: '自动递增',
+                        example: 'Example',
+                        no_example: 'No example',
                         comments: '注释',
                         no_comments: '空',
                         delete_field: '删除字段',

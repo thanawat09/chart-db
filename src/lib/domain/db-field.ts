@@ -23,6 +23,7 @@ export interface DBField {
     default?: string | null;
     collation?: string | null;
     comments?: string | null;
+    example?: string | null;
     check?: string | null;
 }
 
@@ -42,6 +43,7 @@ export const dbFieldSchema: z.ZodType<DBField> = z.object({
     default: z.string().or(z.null()).optional(),
     collation: z.string().or(z.null()).optional(),
     comments: z.string().or(z.null()).optional(),
+    example: z.string().or(z.null()).optional(),
     check: z.string().or(z.null()).optional(),
 });
 

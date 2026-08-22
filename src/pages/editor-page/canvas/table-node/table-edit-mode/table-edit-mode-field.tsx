@@ -33,8 +33,10 @@ export const TableEditModeField: React.FC<TableEditModeFieldProps> = React.memo(
             handlePrimaryKeyToggle,
             handleNullableToggle,
             handleNameChange,
+            handleExampleChange,
             generateFieldSuffix,
             fieldName,
+            example,
             nullable,
             primaryKey,
             removeField,
@@ -109,6 +111,27 @@ export const TableEditModeField: React.FC<TableEditModeFieldProps> = React.memo(
                             </Tooltip>
                         ) : null}
                     </span>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Input
+                                className="h-8 min-w-0 flex-1 !truncate bg-background focus-visible:ring-0"
+                                type="text"
+                                placeholder={t(
+                                    'side_panel.tables_section.table.field_actions.no_example'
+                                )}
+                                value={example}
+                                onChange={(e) =>
+                                    handleExampleChange(e.target.value)
+                                }
+                            />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            {example ||
+                                t(
+                                    'side_panel.tables_section.table.field_actions.example'
+                                )}
+                        </TooltipContent>
+                    </Tooltip>
                     <Tooltip>
                         <TooltipTrigger
                             className="flex h-8 min-w-0 flex-1"

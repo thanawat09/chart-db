@@ -153,6 +153,8 @@ export const mr: LanguageTranslation = {
                         title: 'फील्ड गुणधर्म',
                         unique: 'युनिक',
                         auto_increment: 'ऑटो इंक्रिमेंट',
+                        example: 'Example',
+                        no_example: 'No example',
                         comments: 'टिप्पण्या',
                         no_comments: 'कोणत्याही टिप्पणी नाहीत',
                         delete_field: 'फील्ड हटवा',

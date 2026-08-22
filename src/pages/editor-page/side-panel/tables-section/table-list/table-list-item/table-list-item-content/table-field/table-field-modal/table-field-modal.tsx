@@ -32,6 +32,7 @@ import {
     SelectValue,
 } from '@/components/select/select';
 import { useChartDB } from '@/hooks/use-chartdb';
+import { normalizeExampleValue } from '@/lib/dbml/field-note';
 
 export interface TableFieldPopoverProps {
     field: DBField;
@@ -104,6 +105,7 @@ export const TableFieldPopover: React.FC<TableFieldPopoverProps> = ({
         if (isOpen && !equal(prevFieldRef.current, localField)) {
             debouncedUpdateField({
                 comments: localField.comments,
+                example: normalizeExampleValue(localField.example),
                 characterMaximumLength: localField.characterMaximumLength,
                 precision: localField.precision,
                 scale: localField.scale,
@@ -474,6 +476,31 @@ export const TableFieldPopover: React.FC<TableFieldPopoverProps> = ({
                                 </div>
                             </div>
                         ) : null}
+                        <div className="flex flex-col gap-2">
+                            <Label
+                                htmlFor="field-example"
+                                className="text-subtitle"
+                            >
+                                {t(
+                                    'side_panel.tables_section.table.field_actions.example'
+                                )}
+                            </Label>
+                            <Input
+                                id="field-example"
+                                value={localField.example ?? undefined}
+                                onChange={(e) =>
+                                    setLocalField((current) => ({
+                                        ...current,
+                                        example: e.target.value,
+                                    }))
+                                }
+                                placeholder={t(
+                                    'side_panel.tables_section.table.field_actions.no_example'
+                                )}
+                                className="w-full rounded-md bg-muted text-sm"
+                                readOnly={readonly}
+                            />
+                        </div>
                         <div className="flex flex-col gap-2">
                             <Label htmlFor="width" className="text-subtitle">
                                 {t(

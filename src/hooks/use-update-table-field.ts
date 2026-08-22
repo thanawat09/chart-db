@@ -15,6 +15,7 @@ import {
 } from '@/lib/data/data-types/data-types';
 import { generateDBFieldSuffix } from '@/lib/domain/db-field';
 import type { DataTypeData } from '@/lib/data/data-types/data-types';
+import { normalizeExampleValue } from '@/lib/dbml/field-note';
 
 const generateFieldRegexPatterns = (
     dataType: DataTypeData,
@@ -85,10 +86,12 @@ export const useUpdateTableField = (
 
     // Local state for responsive UI
     const [localFieldName, setLocalFieldName] = useState(field.name);
+    const [localExample, setLocalExample] = useState(field.example ?? '');
     const [localNullable, setLocalNullable] = useState(field.nullable);
     const [localPrimaryKey, setLocalPrimaryKey] = useState(field.primaryKey);
 
     const lastFieldNameRef = useRef<string>(field.name);
+    const lastExampleRef = useRef<string>(field.example ?? '');
 
     useEffect(() => {
         if (localFieldName === lastFieldNameRef.current) {
@@ -96,6 +99,14 @@ export const useUpdateTableField = (
             setLocalFieldName(field.name);
         }
     }, [field.name, localFieldName]);
+
+    useEffect(() => {
+        const nextExample = field.example ?? '';
+        if (localExample === lastExampleRef.current) {
+            lastExampleRef.current = nextExample;
+            setLocalExample(nextExample);
+        }
+    }, [field.example, localExample]);
 
     // Update local state when field properties change externally
     useEffect(() => {
@@ -284,6 +295,20 @@ export const useUpdateTableField = (
         300 // 300ms debounce for text input
     );
 
+    const debouncedExampleUpdate = useDebounce(
+        useCallback(
+            (value: string) => {
+                const next = normalizeExampleValue(value);
+                const current = normalizeExampleValue(field.example);
+                if (next !== current) {
+                    updateField(table.id, field.id, { example: next });
+                }
+            },
+            [updateField, table.id, field.id, field.example]
+        ),
+        300
+    );
+
     // Debounced update for nullable toggle
     const debouncedNullableUpdate = useDebounce(
         useCallback(
@@ -360,6 +385,14 @@ export const useUpdateTableField = (
         [debouncedNameUpdate]
     );
 
+    const handleExampleChange = useCallback(
+        (value: string) => {
+            setLocalExample(value);
+            debouncedExampleUpdate(value);
+        },
+        [debouncedExampleUpdate]
+    );
+
     // Utility function to generate field suffix for display
     const generateFieldSuffix = useCallback(
         (typeId?: string) => {
@@ -388,9 +421,11 @@ export const useUpdateTableField = (
         handlePrimaryKeyToggle,
         handleNullableToggle,
         handleNameChange,
+        handleExampleChange,
         generateFieldSuffix,
         primaryKeyCount,
         fieldName: localFieldName,
+        example: localExample,
         nullable: localNullable,
         primaryKey: localPrimaryKey,
         removeField,

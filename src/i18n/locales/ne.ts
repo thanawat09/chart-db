@@ -151,6 +151,8 @@ export const ne: LanguageTranslation = {
                         title: 'क्षेत्र विशेषताहरू',
                         unique: 'अनन्य',
                         auto_increment: 'स्वचालित वृद्धि',
+                        example: 'Example',
+                        no_example: 'No example',
                         comments: 'टिप्पणीहरू',
                         no_comments: 'कुनै टिप्पणीहरू छैनन्',
                         delete_field: 'क्षेत्र हटाउनुहोस्',

@@ -62,6 +62,7 @@ const arePropsEqual = (
         prevProps.field.primaryKey === nextProps.field.primaryKey &&
         prevProps.field.nullable === nextProps.field.nullable &&
         prevProps.field.comments === nextProps.field.comments &&
+        prevProps.field.example === nextProps.field.example &&
         prevProps.field.unique === nextProps.field.unique &&
         prevProps.field.type.id === nextProps.field.type.id &&
         prevProps.field.type.name === nextProps.field.type.name &&
@@ -459,6 +460,18 @@ export const TableNodeField: React.FC<TableNodeFieldProps> = React.memo(
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs whitespace-pre-wrap break-words">
                                 {field.comments}
+                            </TooltipContent>
+                        </Tooltip>
+                    ) : null}
+                    {field.example ? (
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span className="min-w-0 truncate font-normal text-muted-foreground">
+                                    {field.example}
+                                </span>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs whitespace-pre-wrap break-words">
+                                {field.example}
                             </TooltipContent>
                         </Tooltip>
                     ) : null}

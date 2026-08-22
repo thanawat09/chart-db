@@ -150,6 +150,8 @@ export const en = {
                         character_length: 'Max Length',
                         precision: 'Precision',
                         scale: 'Scale',
+                        example: 'Example',
+                        no_example: 'No example',
                         comments: 'Comments',
                         no_comments: 'No comments',
                         default_value: 'Default Value',

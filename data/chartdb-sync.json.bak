@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
-  "workspaceRevision": 251,
-  "updatedAt": "2026-08-22T06:48:07.933Z",
+  "workspaceRevision": 268,
+  "updatedAt": "2026-08-22T07:32:31.088Z",
   "config": {
     "revision": 11,
     "defaultDiagramId": "lhnima1maasp"
   },
   "diagrams": {
     "lhnima1maasp": {
-      "revision": 186,
-      "updatedAt": "2026-08-22T06:48:07.933Z",
-      "hash": "sha256:d64fa782b09081b62fb682368c1ed64757a61baaa6d215fa109eb1a6fa019863",
+      "revision": 203,
+      "updatedAt": "2026-08-22T07:32:31.088Z",
+      "hash": "sha256:04e6386a1a763946bc3830492e0858697437f01c874f76f89348d16ff76ddce6",
       "data": {
         "id": "lhnima1maasp",
         "name": "i clean",
         "databaseType": "postgresql",
         "createdAt": "2026-07-29T12:47:31.129Z",
-        "updatedAt": "2026-08-22T06:48:00.760Z",
+        "updatedAt": "2026-08-22T07:32:30.615Z",
         "tables": [
           {
             "id": "0tju7206xn5mku6bk6pslvxqz",
@@ -2645,8 +2645,8 @@
             "id": "asdi0il3cll52nu2im2dkk0rq",
             "name": "wfm_positions",
             "schema": "public",
-            "x": -4340,
-            "y": 360,
+            "x": -4281.421683587707,
+            "y": 369.3376686154076,
             "fields": [
               {
                 "id": "nc223ny3hwhbm501indznkeyi",
@@ -4836,8 +4836,8 @@
             "id": "p3o69m2v2hj9jkds7wofa0mea",
             "name": "wfm_staffs",
             "schema": "public",
-            "x": -4760,
-            "y": 340,
+            "x": -4728.2431045125995,
+            "y": 344.14723650117554,
             "fields": [
               {
                 "id": "rqkkulptvsdjm2fm240j67myo",
@@ -4904,7 +4904,8 @@
                 "nullable": false,
                 "createdAt": 1785307709399,
                 "characterMaximumLength": "255",
-                "comments": "ชื่อพนักงาน"
+                "comments": "ชื่อพนักงาน",
+                "example": "ธนวัฒน์"
               },
               {
                 "id": "axfe7ldzh83tq9p2x4xpyyrzd",
@@ -5580,7 +5581,8 @@
             "color": "#8eb7ff",
             "isView": false,
             "createdAt": 1785307709399,
-            "width": 284,
+            "width": 358,
+            "comments": null,
             "order": 15,
             "parentAreaId": "0kabkgbpf6ra55di0vg4xtifj",
             "diagramId": "lhnima1maasp"
@@ -8877,7 +8879,7 @@
             "name": "Area 5",
             "x": -4800,
             "y": 280,
-            "width": 860,
+            "width": 890,
             "height": 980,
             "color": "#ff6363",
             "diagramId": "lhnima1maasp"

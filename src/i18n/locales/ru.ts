@@ -148,6 +148,8 @@ export const ru: LanguageTranslation = {
                         title: 'Атрибуты поля',
                         unique: 'Уникальный',
                         auto_increment: 'Автоинкремент',
+                        example: 'Example',
+                        no_example: 'No example',
                         comments: 'Комментарии',
                         no_comments: 'Нет комментария',
                         delete_field: 'Удалить поле',

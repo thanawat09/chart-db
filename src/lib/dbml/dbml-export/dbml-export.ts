@@ -1,12 +1,13 @@
-import { importer } from '@dbml/core';
+import { validateCheckConstraint } from '@/lib/check-constraints/check-constraints-validator';
 import { exportBaseSQL } from '@/lib/data/sql-export/export-sql-script';
-import type { Diagram } from '@/lib/domain/diagram';
 import { DatabaseType } from '@/lib/domain/database-type';
-import type { DBTable } from '@/lib/domain/db-table';
 import type { DBCustomType } from '@/lib/domain/db-custom-type';
 import { DBCustomTypeKind } from '@/lib/domain/db-custom-type';
-import { validateCheckConstraint } from '@/lib/check-constraints/check-constraints-validator';
 import type { DBRelationship } from '@/lib/domain/db-relationship';
+import type { DBTable } from '@/lib/domain/db-table';
+import type { Diagram } from '@/lib/domain/diagram';
+import { importer } from '@dbml/core';
+import { encodeFieldNote } from '../field-note';
 
 // Use DBCustomType for generating Enum DBML
 const generateEnumsDBML = (customTypes: DBCustomType[] | undefined): string => {
@@ -872,9 +873,11 @@ const restoreNotes = (dbml: string, tables: DBTable[]): string => {
         }
 
         // Restore field-level notes
-        const fieldsWithComments = table.fields.filter((f) => f.comments);
+        const fieldsWithNotes = table.fields.filter(
+            (f) => encodeFieldNote(f.comments, f.example) !== undefined
+        );
 
-        fieldsWithComments.forEach((field) => {
+        fieldsWithNotes.forEach((field) => {
             // Escape field name for regex
             const escapedFieldName = field.name.replace(
                 /[.*+?^${}()|[\]\\]/g,
@@ -882,7 +885,8 @@ const restoreNotes = (dbml: string, tables: DBTable[]): string => {
             );
 
             // Escape the comment text for use in the replacement
-            const escapedComment = escapeDBMLComment(field.comments!);
+            const noteText = encodeFieldNote(field.comments, field.example)!;
+            const escapedComment = escapeDBMLComment(noteText);
 
             // Pattern to match the field line
             // We need to match the complete field definition including array types
@@ -896,9 +900,13 @@ const restoreNotes = (dbml: string, tables: DBTable[]): string => {
             result = result.replace(
                 fieldPattern,
                 (match, fieldPart, brackets) => {
-                    // Check if note already exists
-                    if (brackets && brackets.includes('note:')) {
-                        return match;
+                    // Replace existing note so example is not dropped when a note already exists
+                    if (brackets && /note:\s*'/.test(brackets)) {
+                        const newBrackets = brackets.replace(
+                            /note:\s*'([^'\\]|\\.)*'/g,
+                            `note: '${escapedComment}'`
+                        );
+                        return fieldPart + newBrackets;
                     }
 
                     // Add note to the attributes

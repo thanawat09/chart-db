@@ -152,6 +152,8 @@ export const gu: LanguageTranslation = {
                         title: 'ફીલ્ડ લક્ષણો',
                         unique: 'અદ્વિતીય',
                         auto_increment: 'ઑટો ઇન્ક્રિમેન્ટ',
+                        example: 'Example',
+                        no_example: 'No example',
                         comments: 'ટિપ્પણીઓ',
                         no_comments: 'કોઈ ટિપ્પણીઓ નથી',
                         delete_field: 'ફીલ્ડ કાઢી નાખો',

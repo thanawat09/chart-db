@@ -796,6 +796,7 @@ function compareFieldProperties({
         'unique',
         'nullable',
         'comments',
+        'example',
         'characterMaximumLength',
         'scale',
         'precision',
@@ -842,6 +843,13 @@ function compareFieldProperties({
         areCommentsDifferent(oldField.comments, newField.comments)
     ) {
         changedAttributes.push('comments');
+    }
+
+    if (
+        attributesToCheck.includes('example') &&
+        areCommentsDifferent(oldField.example, newField.example)
+    ) {
+        changedAttributes.push('example');
     }
 
     if (

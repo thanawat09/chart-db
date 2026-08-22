@@ -1,36 +1,37 @@
-import { Parser } from '@dbml/core';
-import type { Diagram } from '@/lib/domain/diagram';
-import { generateDiagramId, generateId, isStringEmpty } from '@/lib/utils';
-import type { DBTable } from '@/lib/domain/db-table';
-import { defaultSchemas } from '@/lib/data/default-schemas';
-import type { Cardinality, DBRelationship } from '@/lib/domain/db-relationship';
-import type { DBField } from '@/lib/domain/db-field';
-import type { DBCheckConstraint } from '@/lib/domain/db-check-constraint';
+import { validateCheckConstraintWithDetails } from '@/lib/check-constraints/check-constraints-validator';
+import { defaultTableColor } from '@/lib/colors';
 import type { DataTypeData } from '@/lib/data/data-types/data-types';
 import {
     findDataTypeDataById,
     getPreferredSynonym,
     requiresNotNull,
 } from '@/lib/data/data-types/data-types';
-import { defaultTableColor } from '@/lib/colors';
-import { DatabaseType } from '@/lib/domain/database-type';
-import type Field from '@dbml/core/types/model_structure/field';
+import { defaultSchemas } from '@/lib/data/default-schemas';
 import {
     getTableIndexesWithPrimaryKey,
+    INDEX_TYPES,
     type DBIndex,
     type IndexType,
-    INDEX_TYPES,
 } from '@/lib/domain';
+import { DatabaseType } from '@/lib/domain/database-type';
+import type { DBCheckConstraint } from '@/lib/domain/db-check-constraint';
 import {
     DBCustomTypeKind,
     type DBCustomType,
 } from '@/lib/domain/db-custom-type';
+import type { DBField } from '@/lib/domain/db-field';
+import type { Cardinality, DBRelationship } from '@/lib/domain/db-relationship';
+import type { DBTable } from '@/lib/domain/db-table';
+import type { Diagram } from '@/lib/domain/diagram';
+import { generateDiagramId, generateId, isStringEmpty } from '@/lib/utils';
+import { Parser } from '@dbml/core';
+import type Field from '@dbml/core/types/model_structure/field';
+import { decodeFieldNote } from '../field-note';
 import {
-    validateArrayTypesForDatabase,
     DBMLValidationError,
     getPositionFromIndex,
+    validateArrayTypesForDatabase,
 } from './dbml-import-error';
-import { validateCheckConstraintWithDetails } from '@/lib/check-constraints/check-constraints-validator';
 
 export const defaultDBMLDiagramName = 'DBML Import';
 
@@ -695,18 +696,20 @@ export const importDBMLToDiagram = async (
 
             // Create fields first so we have their IDs
             const fields: DBField[] = table.fields.map((field) => {
-                // Extract field note/comment
-                let fieldComment: string | undefined;
+                // Extract field note/comment (+ optional @example marker)
+                let rawNote: string | undefined;
                 if (field.note) {
                     if (typeof field.note === 'string') {
-                        fieldComment = field.note;
+                        rawNote = field.note;
                     } else if (
                         typeof field.note === 'object' &&
                         'value' in field.note
                     ) {
-                        fieldComment = field.note.value;
+                        rawNote = field.note.value;
                     }
                 }
+                const { comments: fieldComment, example: fieldExample } =
+                    decodeFieldNote(rawNote);
 
                 // Map DBML type to DataType
                 const mappedType = mapDBMLTypeToDataType(field.type.type_name, {
@@ -742,6 +745,7 @@ export const importDBMLToDiagram = async (
                     ...(field.increment ? { increment: field.increment } : {}),
                     ...(field.isArray ? { isArray: field.isArray } : {}),
                     ...(fieldComment ? { comments: fieldComment } : {}),
+                    ...(fieldExample ? { example: fieldExample } : {}),
                     ...(field.default ? { default: field.default } : {}),
                 };
             });

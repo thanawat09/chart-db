@@ -150,6 +150,8 @@ export const vi: LanguageTranslation = {
                         title: 'Thuộc tính trường',
                         unique: 'Giá trị duy nhất',
                         auto_increment: 'Tự động tăng',
+                        example: 'Example',
+                        no_example: 'No example',
                         comments: 'Bình luận',
                         no_comments: 'Không có bình luận',
                         delete_field: 'Xóa trường',

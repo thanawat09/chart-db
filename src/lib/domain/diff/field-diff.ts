@@ -13,6 +13,7 @@ export type FieldDiffAttribute =
     | 'unique'
     | 'nullable'
     | 'comments'
+    | 'example'
     | 'characterMaximumLength'
     | 'precision'
     | 'scale'
@@ -26,6 +27,7 @@ export const fieldDiffAttributeSchema: z.ZodType<FieldDiffAttribute> = z.union([
     z.literal('unique'),
     z.literal('nullable'),
     z.literal('comments'),
+    z.literal('example'),
     z.literal('characterMaximumLength'),
     z.literal('precision'),
     z.literal('scale'),

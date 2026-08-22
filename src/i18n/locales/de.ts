@@ -151,6 +151,8 @@ export const de: LanguageTranslation = {
                         title: 'Feldattribute',
                         unique: 'Eindeutig',
                         auto_increment: 'Automatisch hochzählen',
+                        example: 'Example',
+                        no_example: 'No example',
                         comments: 'Kommentare',
                         no_comments: 'Keine Kommentare',
                         delete_field: 'Feld löschen',

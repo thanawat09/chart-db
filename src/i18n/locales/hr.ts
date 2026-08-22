@@ -151,6 +151,8 @@ export const hr: LanguageTranslation = {
                         character_length: 'Maksimalna dužina',
                         precision: 'Preciznost',
                         scale: 'Skala',
+                        example: 'Example',
+                        no_example: 'No example',
                         comments: 'Komentari',
                         no_comments: 'Nema komentara',
                         default_value: 'Zadana vrijednost',

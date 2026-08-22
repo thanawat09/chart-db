@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
-  "workspaceRevision": 252,
-  "updatedAt": "2026-08-22T06:55:45.869Z",
+  "workspaceRevision": 269,
+  "updatedAt": "2026-08-22T07:32:41.213Z",
   "config": {
     "revision": 11,
     "defaultDiagramId": "lhnima1maasp"
   },
   "diagrams": {
     "lhnima1maasp": {
-      "revision": 187,
-      "updatedAt": "2026-08-22T06:55:45.869Z",
-      "hash": "sha256:eb716d70fec7e740281b81983befe8c041c3f5f43880debf1dbbc5ffcde0f924",
+      "revision": 204,
+      "updatedAt": "2026-08-22T07:32:41.213Z",
+      "hash": "sha256:638ac026874cbcdbac1048219d216d71922cd2d7cf64d7ee5dc0afc1d7de50e2",
       "data": {
         "id": "lhnima1maasp",
         "name": "i clean",
         "databaseType": "postgresql",
         "createdAt": "2026-07-29T12:47:31.129Z",
-        "updatedAt": "2026-08-22T06:55:37.859Z",
+        "updatedAt": "2026-08-22T07:32:36.843Z",
         "tables": [
           {
             "id": "0tju7206xn5mku6bk6pslvxqz",
@@ -2645,8 +2645,8 @@
             "id": "asdi0il3cll52nu2im2dkk0rq",
             "name": "wfm_positions",
             "schema": "public",
-            "x": -4340,
-            "y": 360,
+            "x": -4281.421683587707,
+            "y": 369.3376686154076,
             "fields": [
               {
                 "id": "nc223ny3hwhbm501indznkeyi",
@@ -4836,8 +4836,8 @@
             "id": "p3o69m2v2hj9jkds7wofa0mea",
             "name": "wfm_staffs",
             "schema": "public",
-            "x": -4760,
-            "y": 340,
+            "x": -4728.2431045125995,
+            "y": 344.14723650117554,
             "fields": [
               {
                 "id": "rqkkulptvsdjm2fm240j67myo",
@@ -4904,7 +4904,8 @@
                 "nullable": false,
                 "createdAt": 1785307709399,
                 "characterMaximumLength": "255",
-                "comments": "ชื่อพนักงาน"
+                "comments": "ชื่อพนักงาน",
+                "example": "ธนวัฒน์"
               },
               {
                 "id": "axfe7ldzh83tq9p2x4xpyyrzd",
@@ -5580,7 +5581,8 @@
             "color": "#8eb7ff",
             "isView": false,
             "createdAt": 1785307709399,
-            "width": 284,
+            "width": 358,
+            "comments": "ตารางเก็บข้อมูลพนักงาน",
             "order": 15,
             "parentAreaId": "0kabkgbpf6ra55di0vg4xtifj",
             "diagramId": "lhnima1maasp"
@@ -8877,7 +8879,7 @@
             "name": "Area 5",
             "x": -4800,
             "y": 280,
-            "width": 860,
+            "width": 890,
             "height": 980,
             "color": "#ff6363",
             "diagramId": "lhnima1maasp"

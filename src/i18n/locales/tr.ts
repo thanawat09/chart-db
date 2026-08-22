@@ -150,6 +150,8 @@ export const tr: LanguageTranslation = {
                         title: 'Alan Özellikleri',
                         unique: 'Tekil',
                         auto_increment: 'Otomatik Artış',
+                        example: 'Example',
+                        no_example: 'No example',
                         comments: 'Yorumlar',
                         no_comments: 'Yorum yok',
                         delete_field: 'Alanı Sil',

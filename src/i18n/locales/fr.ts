@@ -148,6 +148,8 @@ export const fr: LanguageTranslation = {
                         title: 'Attributs du Champ',
                         unique: 'Unique',
                         auto_increment: 'Auto-incrément',
+                        example: 'Example',
+                        no_example: 'No example',
                         comments: 'Commentaires',
                         no_comments: 'Pas de commentaires',
                         delete_field: 'Supprimer le Champ',

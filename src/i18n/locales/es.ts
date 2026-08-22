@@ -150,6 +150,8 @@ export const es: LanguageTranslation = {
                         title: 'Atributos del Campo',
                         unique: 'Único',
                         auto_increment: 'Autoincremento',
+                        example: 'Example',
+                        no_example: 'No example',
                         comments: 'Comentarios',
                         no_comments: 'Sin comentarios',
                         delete_field: 'Eliminar Campo',

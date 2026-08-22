@@ -150,6 +150,8 @@ export const id_ID: LanguageTranslation = {
                         title: 'Atribut Kolom',
                         unique: 'Unik',
                         auto_increment: 'Kenaikan Otomatis',
+                        example: 'Example',
+                        no_example: 'No example',
                         comments: 'Komentar',
                         no_comments: 'Tidak ada komentar',
                         delete_field: 'Hapus Kolom',

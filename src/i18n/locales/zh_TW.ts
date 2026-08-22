@@ -147,6 +147,8 @@ export const zh_TW: LanguageTranslation = {
                         title: '欄位屬性',
                         unique: '唯一',
                         auto_increment: '自動遞增',
+                        example: 'Example',
+                        no_example: 'No example',
                         comments: '註解',
                         no_comments: '無註解',
                         delete_field: '刪除欄位',

@@ -1,31 +1,31 @@
-import { Input } from '@/components/input/input';
-import type { DBTable } from '@/lib/domain';
-import { FileType2, X, SquarePlus, CircleDotDashed } from 'lucide-react';
-import React, {
-    useEffect,
-    useState,
-    useRef,
-    useCallback,
-    useMemo,
-} from 'react';
-import { TableEditModeField } from './table-edit-mode-field';
-import { cn } from '@/lib/utils';
-import { ScrollArea } from '@/components/scroll-area/scroll-area';
 import { Button } from '@/components/button/button';
 import { ColorPicker } from '@/components/color-picker/color-picker';
+import { Input } from '@/components/input/input';
+import { ScrollArea } from '@/components/scroll-area/scroll-area';
+import type { SelectBoxOption } from '@/components/select-box/select-box';
+import { SelectBox } from '@/components/select-box/select-box';
 import { Separator } from '@/components/separator/separator';
 import { useChartDB } from '@/hooks/use-chartdb';
-import { useUpdateTable } from '@/hooks/use-update-table';
-import { useTranslation } from 'react-i18next';
 import { useLayout } from '@/hooks/use-layout';
-import { SelectBox } from '@/components/select-box/select-box';
-import type { SelectBoxOption } from '@/components/select-box/select-box';
+import { useUpdateTable } from '@/hooks/use-update-table';
+import { defaultSchemas } from '@/lib/data/default-schemas';
+import type { DBTable } from '@/lib/domain';
+import type { DBSchema } from '@/lib/domain/db-schema';
 import {
     databasesWithSchemas,
     schemaNameToSchemaId,
 } from '@/lib/domain/db-schema';
-import type { DBSchema } from '@/lib/domain/db-schema';
-import { defaultSchemas } from '@/lib/data/default-schemas';
+import { cn } from '@/lib/utils';
+import { CircleDotDashed, FileType2, SquarePlus, X } from 'lucide-react';
+import React, {
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
+import { useTranslation } from 'react-i18next';
+import { TableEditModeField } from './table-edit-mode-field';
 
 export interface TableEditModeProps {
     table: DBTable;
@@ -44,7 +44,8 @@ export const TableEditMode: React.FC<TableEditModeProps> = React.memo(
             useChartDB();
         const { t } = useTranslation();
         const { openTableFromSidebar, selectSidebarSection } = useLayout();
-        const { tableName, handleTableNameChange } = useUpdateTable(table);
+        const { tableName, tableComments, handleTableNameChange, handleTableCommentsChange } =
+            useUpdateTable(table);
         const [focusFieldId, setFocusFieldId] = useState<string | undefined>(
             focusFieldIdProp
         );
@@ -308,6 +309,18 @@ export const TableEditMode: React.FC<TableEditModeProps> = React.memo(
                             <X className="size-4" />
                         </Button>
                     </div>
+                </div>
+                <div className="border-b border-slate-300 bg-slate-100 px-2 py-1.5 dark:border-slate-700 dark:bg-slate-900/80">
+                    <Input
+                        className="h-7 w-full rounded-sm border-slate-600 bg-background text-sm"
+                        placeholder={t(
+                            'side_panel.tables_section.table.no_comments'
+                        )}
+                        value={tableComments}
+                        onChange={(e) =>
+                            handleTableCommentsChange(e.target.value)
+                        }
+                    />
                 </div>
 
                 <ScrollArea ref={scrollAreaRef} className="nodrag flex-1 p-2">

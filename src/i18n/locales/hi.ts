@@ -151,6 +151,8 @@ export const hi: LanguageTranslation = {
                         title: 'फ़ील्ड विशेषताएँ',
                         unique: 'अद्वितीय',
                         auto_increment: 'ऑटो इंक्रीमेंट',
+                        example: 'Example',
+                        no_example: 'No example',
                         comments: 'टिप्पणियाँ',
                         no_comments: 'कोई टिप्पणी नहीं',
                         delete_field: 'फ़ील्ड हटाएँ',

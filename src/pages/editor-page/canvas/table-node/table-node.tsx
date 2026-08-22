@@ -1,32 +1,15 @@
-import React, {
-    useCallback,
-    useState,
-    useMemo,
-    useRef,
-    useEffect,
-} from 'react';
-import type { NodeProps, Node } from '@xyflow/react';
-import {
-    NodeResizer,
-    useConnection,
-    useStore,
-    Handle,
-    Position,
-} from '@xyflow/react';
 import { Button } from '@/components/button/button';
-import {
-    ChevronsLeftRight,
-    ChevronsRightLeft,
-    Table2,
-    ChevronDown,
-    ChevronUp,
-    CircleDotDashed,
-    SquareDot,
-    SquarePlus,
-    SquareMinus,
-    View,
-} from 'lucide-react';
 import { Label } from '@/components/label/label';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from '@/components/tooltip/tooltip';
+import { useDiff } from '@/context/diff-context/use-diff';
+import { useCanvas } from '@/hooks/use-canvas';
+import { useChartDB } from '@/hooks/use-chartdb';
+import { useLayout } from '@/hooks/use-layout';
+import type { DBField } from '@/lib/domain/db-field';
 import {
     MAX_TABLE_SIZE,
     MID_TABLE_SIZE,
@@ -34,25 +17,42 @@ import {
     TABLE_MINIMIZED_FIELDS,
     type DBTable,
 } from '@/lib/domain/db-table';
-import { TableNodeField } from './table-node-field';
-import { useLayout } from '@/hooks/use-layout';
-import { useChartDB } from '@/hooks/use-chartdb';
-import type { RelationshipEdgeType } from '../relationship-edge/relationship-edge';
-import type { DBField } from '@/lib/domain/db-field';
-import { useTranslation } from 'react-i18next';
-import { TableNodeContextMenu } from './table-node-context-menu';
 import { cn } from '@/lib/utils';
-import { TableNodeDependencyIndicator } from './table-node-dependency-indicator';
-import type { EdgeType } from '../canvas';
+import type { Node, NodeProps } from '@xyflow/react';
 import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from '@/components/tooltip/tooltip';
-import { useDiff } from '@/context/diff-context/use-diff';
-import { TableNodeStatus } from './table-node-status/table-node-status';
+    Handle,
+    NodeResizer,
+    Position,
+    useConnection,
+    useStore,
+} from '@xyflow/react';
+import {
+    ChevronDown,
+    ChevronsLeftRight,
+    ChevronsRightLeft,
+    ChevronUp,
+    CircleDotDashed,
+    SquareDot,
+    SquareMinus,
+    SquarePlus,
+    Table2,
+    View,
+} from 'lucide-react';
+import React, {
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
+import { useTranslation } from 'react-i18next';
+import type { EdgeType } from '../canvas';
+import type { RelationshipEdgeType } from '../relationship-edge/relationship-edge';
 import { TableEditMode } from './table-edit-mode/table-edit-mode';
-import { useCanvas } from '@/hooks/use-canvas';
+import { TableNodeContextMenu } from './table-node-context-menu';
+import { TableNodeDependencyIndicator } from './table-node-dependency-indicator';
+import { TableNodeField } from './table-node-field';
+import { TableNodeStatus } from './table-node-status/table-node-status';
 
 export const TABLE_RELATIONSHIP_SOURCE_HANDLE_ID_PREFIX = 'table_rel_source_';
 export const TABLE_RELATIONSHIP_TARGET_HANDLE_ID_PREFIX = 'table_rel_target_';
@@ -112,6 +112,11 @@ export const TableNode: React.FC<NodeProps<TableNodeType>> = React.memo(
         const editTableModeFieldId = useMemo(
             () => (editTableMode ? editTableModeTable?.fieldId : null),
             [editTableMode, editTableModeTable]
+        );
+
+        const tableComment = useMemo(
+            () => table.comments?.trim() || null,
+            [table.comments]
         );
 
         // Store the initial field count when entering edit mode to keep table height fixed
@@ -562,20 +567,40 @@ export const TableNode: React.FC<NodeProps<TableNodeType>> = React.memo(
                                     </span>
                                 </Label>
                             ) : isDiffNewTable ? (
-                                <Label className="flex h-5 flex-col justify-center truncate rounded-sm bg-green-200 px-2 py-0.5 text-sm font-normal text-green-900 dark:bg-green-800 dark:text-green-200">
-                                    {table.name}
+                                <Label className="flex h-5 items-center truncate rounded-sm bg-green-200 px-2 py-0.5 text-sm font-normal text-green-900 dark:bg-green-800 dark:text-green-200">
+                                    <span className="truncate">{table.name}</span>
+                                    {tableComment ? (
+                                        <span className="ml-1 truncate font-normal opacity-70">
+                                            ({tableComment})
+                                        </span>
+                                    ) : null}
                                 </Label>
                             ) : isDiffTableRemoved ? (
-                                <Label className="flex h-5 flex-col justify-center truncate rounded-sm bg-red-200 px-2 py-0.5 text-sm font-normal text-red-900 dark:bg-red-800 dark:text-red-200">
-                                    {table.name}
+                                <Label className="flex h-5 items-center truncate rounded-sm bg-red-200 px-2 py-0.5 text-sm font-normal text-red-900 dark:bg-red-800 dark:text-red-200">
+                                    <span className="truncate">{table.name}</span>
+                                    {tableComment ? (
+                                        <span className="ml-1 truncate font-normal opacity-70">
+                                            ({tableComment})
+                                        </span>
+                                    ) : null}
                                 </Label>
                             ) : isDiffTableChanged && !isSummaryOnly ? (
-                                <Label className="flex h-5 flex-col justify-center truncate rounded-sm bg-sky-200 px-2 py-0.5 text-sm font-normal text-sky-900 dark:bg-sky-800 dark:text-sky-200">
-                                    {table.name}
+                                <Label className="flex h-5 items-center truncate rounded-sm bg-sky-200 px-2 py-0.5 text-sm font-normal text-sky-900 dark:bg-sky-800 dark:text-sky-200">
+                                    <span className="truncate">{table.name}</span>
+                                    {tableComment ? (
+                                        <span className="ml-1 truncate font-normal opacity-70">
+                                            ({tableComment})
+                                        </span>
+                                    ) : null}
                                 </Label>
                             ) : (
-                                <Label className="truncate px-2 py-0.5 text-sm font-bold">
-                                    {table.name}
+                                <Label className="flex min-w-0 items-center truncate px-2 py-0.5 text-sm font-bold">
+                                    <span className="truncate">{table.name}</span>
+                                    {tableComment ? (
+                                        <span className="ml-1 truncate font-normal text-muted-foreground">
+                                            ({tableComment})
+                                        </span>
+                                    ) : null}
                                 </Label>
                             )}
                         </div>
